@@ -2,7 +2,7 @@ import Elysia, { t } from "elysia";
 import { ClassController } from "./class.controller";
 import { classSchema, classCreateUpdateSchema } from "./class.schema";
 
-export const classRoutes = new Elysia({ prefix: "/classes" })
+export const ClassRoutes = new Elysia({ prefix: "/classes" })
 
     // GET /classes/all
     .get("/all", ClassController.findAll, {
