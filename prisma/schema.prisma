@@ -1,0 +1,133 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/providers/database/generated"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum ExamType {
+  InSchedule
+  OutSchedule
+}
+
+enum Level {
+  Pvoc
+  Pvs
+}
+
+model Department {
+  id        String   @id @default(cuid()) @db.VarChar(25)
+  name      String   @db.VarChar(100)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  classes  Class[]
+  teachers Teacher[]
+
+  @@index([name])
+}
+
+model Course {
+  id       String @id @default(cuid()) @db.VarChar(25)
+  code     String @unique @db.VarChar(10)
+  name     String @db.VarChar(100)
+  duration Int
+  examType ExamType @default(InSchedule)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  enrollments  Enrollment[]
+  courseGroups CourseGroup[]
+
+  @@index([code, name])
+}
+
+model Class {
+  id           String   @id @default(cuid()) @db.VarChar(25)
+  name         String   @db.VarChar(100)
+  level        Level    @default(Pvoc)
+  classYear    String   @db.VarChar(4)
+  departmentId String   @db.VarChar(25)
+  amount       Int      @db.Int()
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  department  Department   @relation(fields: [departmentId], references: [id])
+  enrollments Enrollment[]
+
+  @@index([departmentId])
+}
+
+model Enrollment {
+  id       String @id @default(cuid()) @db.VarChar(25)
+  classId  String @db.VarChar(25)
+  courseId String @db.VarChar(25)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  class  Class  @relation(fields: [classId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
+
+  @@unique([classId, courseId])
+  @@index([classId, courseId])
+}
+
+model CourseGroup {
+  id       String @id @default(cuid()) @db.VarChar(25)
+  courseId String @db.VarChar(25)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  course Course @relation(fields: [courseId], references: [id])
+
+  @@index([courseId])
+}
+
+model Room {
+  id         String @id @default(cuid()) @db.VarChar(25)
+  roomNumber String @unique @db.VarChar(255)
+  building   String @db.VarChar(255)
+  floor      String @db.VarChar(255)
+  capacity   Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([roomNumber, building])
+}
+
+model Teacher {
+  id           String @id @default(cuid()) @db.VarChar(25)
+  name         String @db.VarChar(255)
+  departmentId String @db.VarChar(25)
+  tel          String @unique @db.VarChar(255)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  department   Department    @relation(fields: [departmentId], references: [id])
+  proctorPairs ProctorPair[]
+
+  @@index([name, departmentId])
+}
+
+model ProctorPair {
+  id        String @id @default(cuid()) @db.VarChar(25)
+  teacherId String @db.VarChar(25)
+
+  createdAt DateTime @default(now())  
+  updatedAt DateTime @updatedAt
+
+  teacher Teacher @relation(fields: [teacherId], references: [id])
+
+  @@unique([teacherId])
+  @@index([teacherId])
+}
