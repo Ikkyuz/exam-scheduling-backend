@@ -1,15 +1,39 @@
-# Elysia with Bun runtime
+# Prisma + MySQL with Bun
 
-## Getting Started
-To get started with this template, simply paste this command into your terminal:
-```bash
-bun create elysia ./elysia-example
+โปรเจกต์นี้ใช้ **Prisma ORM** เชื่อมต่อกับ **MySQL Database** และจัดการ Schema, Migration และ Generate Types สำหรับใช้งานในแอปพลิเคชัน
+
+---
+
+## ⚙️ การตั้งค่า Database
+
+สร้างไฟล์ `.env` ที่ root ของโปรเจกต์ และเพิ่มค่าเชื่อมต่อ **MySQL**:
+
+```env
+DATABASE_URL="mysql://root:mysecretpassword@localhost:3306/docs"
 ```
 
-## Development
-To start the development server run:
-```bash
-bun run dev
+# Prisma
+
+init prisma
+
+```sh
+bun x prisma@latest init --datasource-provider=mysql
 ```
 
-Open http://localhost:3000/ with your browser to see the result.
+generate types
+
+```sh
+bun x prisma generate
+```
+
+```sh
+bun x prisma db push
+```
+
+```sh
+bun x prisma migrate reset
+```
+
+```sh
+bun x prisma studio
+```"# exam-scheduling-backend" 
