@@ -17,5 +17,5 @@ export const app = () => {
     .use(CourseGroupRoute)
     .use(RoomRoutes)
     .use(TeacherRoutes)
-    .use(ProctorPairRoutes);
+    .use(ProctorPairRoutes); 
 };
