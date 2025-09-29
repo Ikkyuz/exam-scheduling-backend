@@ -8,7 +8,7 @@ export enum Level {
 export const classSchema = t.Object({
   id: t.String({ format: "cuid", min: 25, max: 25 }),
   name: t.String({ max: 100 }),
-  level: t.Enum(Level),
+  level: t.Union([t.Literal(Level.Pvoc), t.Literal(Level.Pvs)]),
   classYear: t.String({ min: 4, max: 4 }),
   departmentId: t.String({ min: 25, max: 25 }),
   amount: t.Number({ min: 1, max: 40 }),

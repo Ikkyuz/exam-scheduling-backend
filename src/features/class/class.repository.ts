@@ -2,9 +2,7 @@ import prisma from "../../providers/database/database.provider";
 import {  ClassCreateUpdateSchema } from "./class.schema";
 
 export namespace ClassRepository {
-    export async function createMany(
-        classes: ClassCreateUpdateSchema[]
-    ) {
+    export async function createMany(classes: ClassCreateUpdateSchema[]) {
         return await prisma.class.createMany({
             data: classes,
             skipDuplicates: true,

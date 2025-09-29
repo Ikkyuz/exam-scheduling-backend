@@ -93,9 +93,9 @@ model CourseGroup {
 
 model Room {
   id         String @id @default(cuid()) @db.VarChar(25)
-  roomNumber String @unique @db.VarChar(255)
-  building   String @db.VarChar(255)
-  floor      String @db.VarChar(255)
+  roomNumber String @unique @db.VarChar(100)
+  building   String @db.VarChar(10)
+  floor      String @db.VarChar(10)
   capacity   Int
 
   createdAt DateTime @default(now())
