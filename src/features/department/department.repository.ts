@@ -1,47 +1,70 @@
-import prisma from "../../providers/database/database.provider";
+import prisma from "@/providers/database/database.provider";
 import { DepartmentCreateUpdate } from "./department.schema";
 
 export namespace DepartmentRepository {
-  export async function createMany(departments: DepartmentCreateUpdate[]) {
-    return await prisma.department.createMany({
-      data: departments,
-      skipDuplicates: true, // กัน insert ซ้ำ (ถ้ามี unique constraint)
-    });
+  export async function createMany(department: DepartmentCreateUpdate[]) {
+    return prisma.department.createMany({ data: department });
   }
 
-  export async function findAll() {
-    return await prisma.department.findMany();
+  export async function findAll(options: {
+    skip: number;
+    take: number;
+    search?: string;
+  }) {
+    return prisma.department.findMany({
+      include: {
+        classes: true,
+        teachers: true,
+      },
+      take: options.take,
+      skip: options.skip,
+    });
   }
 
   export async function findById(departmentId: string) {
     return await prisma.department.findUnique({
-      where: {
-        id: departmentId,
+      where: { id: departmentId },
+      include: {
+        classes: true,
+        teachers: true,
       },
     });
   }
 
-  export async function updateById(
+  export async function update(
     departmentId: string,
-    department: DepartmentCreateUpdate,
+    department: Partial<DepartmentCreateUpdate>
   ) {
-    return await prisma.department.update({
-      where: {
-        id: departmentId,
-      },
+    return prisma.department.update({
+      where: { id: departmentId },
       data: department,
-    });
-  }
-
-  export async function deleteById(departmentId: string) {
-    return await prisma.department.delete({
-      where: {
-        id: departmentId,
+      include: {
+        classes: true,
+        teachers: true,
       },
     });
   }
 
   export async function deleteAll() {
-    return await prisma.department.deleteMany();
+    return prisma.department.deleteMany();
+  }
+
+  export async function deleteById(departmentId: string) {
+    return prisma.department.delete({
+      where: { id: departmentId },
+      include: {
+        classes: true,
+        teachers: true,
+      },
+    });
+  }
+
+  export async function countAll(search?: string) {
+    const where = search
+      ? {
+          OR: [{ name: { contains: search } }, { id: { contains: search } }],
+        }
+      : {};
+    return await prisma.department.count({ where });
   }
 }

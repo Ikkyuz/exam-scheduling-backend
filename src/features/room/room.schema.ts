@@ -1,20 +1,21 @@
 import { t } from "elysia";
 
-export const roomSchema = t.Object({
-  id: t.String({ format: "cuid", min: 25, max: 25 }),
-  roomNumber: t.String({ max: 100 }),
-  building: t.String({ max: 10 }),
-  floor: t.String({ max: 10 }),
-  capacity: t.Number({ min: 1 }),
+export const RoomSchema = t.Object({
+  id: t.String(),
+  roomNumber: t.String(),
+  building: t.String(),
+  floor: t.String(),
+  capacity: t.Number(),
   createdAt: t.Date(),
   updatedAt: t.Date(),
 });
 
-export const roomCreateUpdateSchema = t.Omit(roomSchema, [
+export type Room = typeof RoomSchema.static;
+
+export const RoomCreateUpdateSchema = t.Omit(RoomSchema, [
   "id",
   "createdAt",
   "updatedAt",
 ]);
 
-export type RoomSchema = typeof roomSchema.static;
-export type RoomCreateUpdateSchema = typeof roomCreateUpdateSchema.static;
+export type RoomCreateUpdate = typeof RoomCreateUpdateSchema.static;

@@ -1,19 +1,37 @@
 import { t } from "elysia";
 
-export const enrollmentSchema = t.Object({
-  id: t.String({ format: "cuid", min: 25, max: 25 }),
-  classId: t.String({ min: 25, max: 25 }),
-  courseId: t.String({ min: 25, max: 25 }),
+export const EnrollmentSchema = t.Object({
+  id: t.String(),
+  courseId: t.String(),
   createdAt: t.Date(),
   updatedAt: t.Date(),
 });
 
-// สำหรับการสร้างหรืออัปเดต Enrollment (ไม่ต้องมี id, createdAt, updatedAt)
-export const enrollmentCreateUpdateSchema = t.Omit(enrollmentSchema, [
-  "id",
-  "createdAt",
-  "updatedAt",
+export const EnrollmentCreateUpdateSchema = t.Omit(EnrollmentSchema, [
+    "id",
+    "createdAt",
+    "updatedAt",
 ]);
 
-export type EnrollmentSchema = typeof enrollmentSchema.static;
-export type EnrollmentCreateUpdateSchema = typeof enrollmentCreateUpdateSchema.static;
+export const EnrollmentWithRelationsSchema = t.Composite([
+    EnrollmentSchema,
+    t.Object({
+        course: t.Array(t.Object({
+            id: t.String(),
+            code: t.String(),
+            name: t.String(),
+            duration: t.Number(),
+            examType: t.UnionEnum(["InSchedule", "OutSchedule"]),
+        })),
+        class: t.Array(t.Object({
+            id: t.String(),
+            name: t.String(),
+            level: t.UnionEnum(["Pvoc", "Pvs"]),
+            classYear: t.String(),
+        })),
+    }),
+]);
+
+export type Enrollment = typeof EnrollmentSchema.Type;
+export type EnrollmentCreateUpdate = typeof EnrollmentCreateUpdateSchema.Type;
+export type EnrollmentWithRelations = typeof EnrollmentWithRelationsSchema.Type;

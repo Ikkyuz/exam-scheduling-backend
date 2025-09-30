@@ -1,19 +1,28 @@
 import { t } from "elysia";
 
-export const teacherSchema = t.Object({
-  id: t.String({ format: "cuid", min: 25, max: 25 }),
-  name: t.String({ max: 255 }),
-  departmentId: t.String({ min: 25, max: 25 }),
-  tel: t.String({ max: 255 }),
+export const TeacherSchema = t.Object({
+  id: t.String(),
+  name: t.String(),
+  departmentId: t.String(),
+  tel: t.String(),
   createdAt: t.Date(),
   updatedAt: t.Date(),
 });
 
-export const teacherCreateUpdateSchema = t.Omit(teacherSchema, [
+export type Teacher = typeof TeacherSchema.static;
+
+export const TeacherCreateUpdateSchema = t.Omit(TeacherSchema, [
   "id",
   "createdAt",
   "updatedAt",
 ]);
 
-export type TeacherSchema = typeof teacherSchema.static;
-export type TeacherCreateUpdateSchema = typeof teacherCreateUpdateSchema.static;
+export type TeacherCreateUpdate = typeof TeacherCreateUpdateSchema.static;
+
+export const TeacherWithRelationsSchema = t.Composite([
+  TeacherSchema,
+  t.Object({
+    department: t.Omit(TeacherSchema, ["createdAt", "updatedAt"]), // ป้องกัน Circular dependency
+    proctorPairs: t.Array(t.Omit(TeacherSchema, ["createdAt", "updatedAt"])),
+  }),
+]);

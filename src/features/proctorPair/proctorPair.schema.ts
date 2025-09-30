@@ -1,17 +1,29 @@
 import { t } from "elysia";
+import { TeacherSchema } from "@/features/teacher/teacher.schema";
 
-export const proctorPairSchema = t.Object({
-  id: t.String({ format: "cuid", min: 25, max: 25 }),
-  teacherId: t.String({ min: 25, max: 25 }),
-  createdAt: t.Date(),
-  updatedAt: t.Date(),
+export const ProctorPairSchema = t.Object({
+    id: t.String(),
+    teacherId: t.String(),
+    createdAt: t.Date(),
+    updatedAt: t.Date(),
 });
 
-export const proctorPairCreateUpdateSchema = t.Omit(proctorPairSchema, [
-  "id",
-  "createdAt",
-  "updatedAt",
+export type ProctorPair = typeof ProctorPairSchema.static;
+
+// Schema for Relations
+export const ProctorPairWithRelationsSchema = t.Composite([
+    ProctorPairSchema,
+    t.Object({
+        teacher: t.Omit(TeacherSchema, ['proctorPairs']),
+    }),
 ]);
 
-export type ProctorPairSchema = typeof proctorPairSchema.static;
-export type ProctorPairCreateUpdateSchema = typeof proctorPairCreateUpdateSchema.static;
+export type ProctorPairWithRelations = typeof ProctorPairWithRelationsSchema.static;
+
+export const ProctorPairCreateUpdateSchema = t.Omit(ProctorPairSchema, [
+    "id",
+    "createdAt",
+    "updatedAt",
+]);
+
+export type ProctorPairCreateUpdate = typeof ProctorPairCreateUpdateSchema.static;

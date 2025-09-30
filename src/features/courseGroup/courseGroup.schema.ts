@@ -1,17 +1,39 @@
 import { t } from "elysia";
 
-export const courseGroupSchema = t.Object({
-    id: t.String({ format: "cuid", minLength: 25, maxLength: 25 }),
-    courseId: t.String({ minLength: 25, maxLength: 25 }),
-    createdAt: t.Date(),
-    updatedAt: t.Date(),
+export const CourseGroupSchema = t.Object({
+  id: t.String(),
+  courseId: t.String(),
+  createdAt: t.Date(),
+  updatedAt: t.Date(),
 });
 
-export const courseGroupCreateUpdateSchema = t.Omit(courseGroupSchema, [
-    "id",
-    "createdAt",
-    "updatedAt",
+export type CourseGroup = typeof CourseGroupSchema.static;
+
+// Schema สำหรับ Relations
+export const CourseGroupWithRelationsSchema = t.Composite([
+  CourseGroupSchema,
+  t.Object({
+    course: t.Array(
+      t.Object({
+        id: t.String(),
+        code: t.String(),
+        name: t.String(),
+        duration: t.Number(),
+        examType: t.UnionEnum(["InSchedule", "OutSchedule"]),
+      })
+    ),
+  }),
 ]);
 
-export type CourseGroupSchema = typeof courseGroupSchema.static
-export type CourseGroupCreateUpdateSchema = typeof courseGroupCreateUpdateSchema.static
+export type CourseGroupWithRelations =
+  typeof CourseGroupWithRelationsSchema.static;
+
+// Schema สำหรับ Create/Update
+export const CourseGroupCreateUpdateSchema = t.Omit(CourseGroupSchema, [
+  "id",
+  "createdAt",
+  "updatedAt",
+]);
+
+export type CourseGroupCreateUpdate =
+  typeof CourseGroupCreateUpdateSchema.static;

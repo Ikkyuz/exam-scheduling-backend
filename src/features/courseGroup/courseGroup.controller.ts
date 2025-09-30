@@ -1,73 +1,203 @@
+import Elysia, { t } from "elysia";
+import {
+  CourseGroupSchema,
+  CourseGroupCreateUpdateSchema,
+  CourseGroupWithRelationsSchema,
+} from "./courseGroup.schema";
 import { CourseGroupService } from "./courseGroup.service";
 
-export namespace CourseGroupController {
-    export async function findAll({ set }: any) {
-        try {
-            const courseGroups = await CourseGroupService.findAll();
-            set.status = "OK";
-            return { success: true, data: courseGroups, message: "CourseGroups fetched successfully" };
-        } catch(error) {
-            set.status = "Internal Server Error";
-            return { success: false, message: "Failed to fetch courseGroups" };
+export const courseGroupController = new Elysia({ prefix: "/courseGroups" })
+  .post(
+    "/",
+    async ({ body, set }) => {
+      try {
+        const newCourseGroup = await CourseGroupService.createMany(body);
+        set.status = "Created";
+        return {
+          data: newCourseGroup,
+          message: "CourseGroup created successfully",
+        };
+      } catch (error: any) {
+        if (error.message.includes("already exists")) {
+          set.status = "Conflict";
+          return { message: error.message };
         }
+        set.status = "Internal Server Error";
+        return { message: error.message || "Internal Server Error" };
+      }
+    },
+    {
+      body: t.Array(CourseGroupCreateUpdateSchema),
+      response: {
+        201: t.Object({
+          newCourseGroup: t.Array(CourseGroupSchema),
+          message: t.String(),
+        }),
+        409: t.String(),
+        500: t.String(),
+      },
+      tags: ["CourseGroups"],
     }
+  )
 
-    export async function findById({ params, set }: any) {
-        try {
-            const courseGroup = await CourseGroupService.findById(params.id);
-            if (!courseGroup) {
-                set.status = "Not Found";
-                return { success: false, message: "CourseGroup not found" };
-            }
-            set.status = "OK";
-            return { success: true, data: courseGroup, message: "CourseGroup fetched successfully" };
-        } catch(error) {
-            set.status = "Internal Server Error";
-            return { success: false, message: "Failed to fetch courseGroup" };
-        }
-    }
+  .get(
+    "/",
+    async ({ query, set }) => {
+      try {
+        const page = query.page ? Number(query.page) : 1;
+        const itemsPerPage = query.itemsPerPage
+          ? Number(query.itemsPerPage)
+          : 10;
+        const search = query.search;
 
-    export async function createMany({ body, set }: any) {
-        try {
-            const courseGroup = await CourseGroupService.createMany(body);
-            set.status = "OK";
-            return { success: true, data: courseGroup, message: "CourseGroup created successfully" };
-        } catch(error) {
-            set.status = "Internal Server Error";
-            return { success: false, message: "Failed to create courseGroup" };
-        }
-    }
+        const result = await CourseGroupService.findAll({
+          page,
+          itemsPerPage,
+          search,
+        });
 
-    export async function updateById({ params, body, set }: any) {
-        try {
-            const courseGroup = await CourseGroupService.updateById(params.id, body);
-            set.status = "OK";
-            return { success: true, data: courseGroup, message: "CourseGroup updated successfully" };
-        } catch(error) {
-            set.status = "Internal Server Error";
-            return { success: false, message: "Failed to update courseGroup" };
+        if (result.data.length === 0 && result.meta_data.total > 0) {
+          set.status = "No Content"; // 204
+          return { message: "No content for this page/query." };
         }
-    }
 
-    export async function deleteAll({ set }: any) {
-        try {
-            await CourseGroupService.deleteAll();
-            set.status = "OK";
-            return { success: true, message: "All courseGroups deleted successfully" };
-        } catch(error) {
-            set.status = "Internal Server Error";
-            return { success: false, message: "Failed to delete courseGroups" };
-        }
+        return result;
+      } catch (error: any) {
+        set.status = "Internal Server Error"; // 500
+        return { message: error.message || "Internal Server Error" };
+      }
+    },
+    {
+      query: t.Object({
+        page: t.Optional(t.Numeric()),
+        itemsPerPage: t.Optional(t.Numeric()),
+        search: t.Optional(t.String()),
+      }),
+      response: {
+        200: t.Object({
+          data: t.Array(CourseGroupWithRelationsSchema),
+          meta_data: t.Object({ total: t.Numeric() }),
+        }),
+        204: t.Object({ message: t.String() }),
+        500: t.Object({ message: t.String() }),
+      },
+      tags: ["CourseGroups"],
     }
+  )
 
-    export async function deleteById({ params, set }: any) {
-        try {
-            await CourseGroupService.deleteById(params.id);
-            set.status = "OK";
-            return { success: true, message: "CourseGroup deleted successfully" };
-        } catch(error) {
-            set.status = "Internal Server Error";
-            return { success: false, message: "Failed to delete courseGroup" };
+  .get(
+    "/:id",
+    async ({ params, set }) => {
+      try {
+        const result = await CourseGroupService.findById(params.id);
+        return result;
+      } catch (error: any) {
+        if (error.message === "CourseGroup not found") {
+          set.status = "Not Found";
+          return error.message;
         }
+        set.status = "Internal Server Error";
+        if ("message" in error) return error.message;
+        return "Internal Server Error";
+      }
+    },
+    {
+      params: t.Object({ id: t.String() }),
+      response: {
+        200: t.Object({ data: CourseGroupWithRelationsSchema }),
+        404: t.Object({ message: t.String() }),
+        500: t.String(),
+      },
+      tags: ["CourseGroups"],
     }
-}
+  )
+
+  .patch(
+    "/:id",
+    async ({ params, body, set }) => {
+      try {
+        const updatedCourseGroup = await CourseGroupService.update(
+          params.id,
+          body
+        );
+        set.status = "OK"; // 200
+        return {
+          data: updatedCourseGroup,
+          message: "CourseGroup updated successfully",
+        };
+      } catch (error: any) {
+        if (error.message.includes("not found")) {
+          set.status = "Not Found"; // 404
+          return "CourseGroup not found"; // string
+        }
+        if (error.message.includes("already exists")) {
+          set.status = "Conflict"; // 409
+          return error.message; // string
+        }
+        set.status = "Internal Server Error"; // 500
+        return error.message || "Internal Server Error"; // string
+      }
+    },
+    {
+      params: t.Object({ id: t.String() }),
+      body: t.Partial(CourseGroupCreateUpdateSchema),
+      response: {
+        200: t.Object({
+          data: CourseGroupWithRelationsSchema, // ต้อง match relations
+          message: t.String(),
+        }),
+        404: t.Object({ message: t.String() }),
+        409: t.Object({ message: t.String() }),
+        500: t.Object({ message: t.String() }),
+      },
+      tags: ["CourseGroups"],
+    }
+  )
+
+  .delete(
+    "/",
+    async ({ set }) => {
+      try {
+        const result = await CourseGroupService.deleteAll();
+        return result;
+      } catch (error: any) {
+        set.status = "Internal Server Error";
+        if ("message" in error) return error.message;
+        return "Internal Server Error";
+      }
+    },
+    {
+      response: {
+        200: t.Object({ message: t.String() }),
+        500: t.Object({ message: t.String() }),
+      },
+      tags: ["CourseGroups"],
+    }
+  )
+
+  .delete(
+    "/:id",
+    async ({ params, set }) => {
+      try {
+        const result = await CourseGroupService.deleteById(params.id);
+        return result;
+      } catch (error: any) {
+        if (error.message === "Course not found") {
+          set.status = "Not Found";
+          return error.message;
+        }
+        set.status = "Internal Server Error";
+        if ("message" in error) return error.message;
+        return "Internal Server Error";
+      }
+    },
+    {
+      params: t.Object({ id: t.String() }),
+      response: {
+        200: t.Object({ message: t.String() }),
+        404: t.Object({ message: t.String() }),
+        500: t.String(),
+      },
+      tags: ["CourseGroups"],
+    }
+  );

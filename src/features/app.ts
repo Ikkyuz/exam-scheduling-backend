@@ -1,21 +1,21 @@
 import { Elysia } from "elysia";
-import { DepartmentRoutes } from "./department/department.route";
-import { CourseRoutes } from "./course/course.route";
-import { ClassRoutes } from "./class/class.route";
-import { EnrollmentRoutes } from "./enrollment/enrollment.route";
-import { CourseGroupRoute } from "./courseGroup/courseGroup.route";
-import { RoomRoutes } from "./room/room.route";
-import { TeacherRoutes } from "./teacher/teacher.route";
-import { ProctorPairRoutes } from "./proctorPair/proctorPair.route";
+import { departmentController } from "./department/department.controller";
+import { courseController } from "./course/course.controller";
+import { classController } from "./class/class.controller";
+import { courseGroupController } from "./courseGroup/courseGroup.controller";
+import { enrollmentController } from "./enrollment/enrollment.controller";
+import { roomController } from "./room/room.controller";
+import { teacherController } from "./teacher/teacher.controller";
+import { proctorPairController } from "./proctorPair/proctorPair.controller";
 
 export const app = () => {
-  return new Elysia({ name: "app" })
-    .use(DepartmentRoutes)
-    .use(CourseRoutes)
-    .use(ClassRoutes)
-    .use(EnrollmentRoutes)
-    .use(CourseGroupRoute)
-    .use(RoomRoutes)
-    .use(TeacherRoutes)
-    .use(ProctorPairRoutes); 
+  return new Elysia({ name: "app", prefix: "/api" })
+    .use(departmentController)
+    .use(courseController)
+    .use(classController)
+    .use(courseGroupController)
+    .use(enrollmentController)
+    .use(roomController)
+    .use(teacherController)
+    .use(proctorPairController)
 };

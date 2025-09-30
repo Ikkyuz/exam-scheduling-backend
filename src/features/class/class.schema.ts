@@ -1,22 +1,38 @@
 import { t } from "elysia";
+import { EnrollmentSchema } from "../enrollment/enrollment.schema";
 
-export const classSchema = t.Object({
-  id: t.String({ format: "cuid", min: 25, max: 25 }),
-  name: t.String({ max: 100 }),
-  level: t.UnionEnum(["Pvoc", "Pvs"]),
-  classYear: t.String({ min: 4, max: 4 }),
-  departmentId: t.String({ min: 25, max: 25 }),
-  amount: t.Number({ min: 1, max: 40 }),
-  createdAt: t.Date(),
-  updatedAt: t.Date(),
+export const ClassSchema = t.Object({
+    id: t.String(),
+    name: t.String(),
+    // Level เป็น enum ใน Prisma แต่ Elysia ต้องใช้ t.UnionEnum
+    level: t.UnionEnum(["Pvoc", "Pvs"]),
+    classYear: t.String(),
+    departmentId: t.String(),
+    amount: t.Number(),
+    createdAt: t.Date(),
+    updatedAt: t.Date(),
 });
 
-// สำหรับการสร้างหรืออัปเดต Class (ไม่ต้องมี id, createdAt, updatedAt)
-export const classCreateUpdateSchema = t.Omit(classSchema, [
-  "id",
-  "createdAt",
-  "updatedAt",
+export type Class = typeof ClassSchema.static;
+
+// Schema for Relations
+export const ClassWithRelationsSchema = t.Composite([
+    ClassSchema,
+    t.Object({
+        department: t.Array(t.Object({
+            id: t.String(),
+            name: t.String(),
+        })),
+        enrollment: t.Array(t.Omit(EnrollmentSchema, ["createdAt", "updatedAt"])),
+    }),
 ]);
 
-export type ClassSchema = typeof classSchema.static;
-export type ClassCreateUpdateSchema = typeof classCreateUpdateSchema.static;
+export type ClassWithRelations = typeof ClassWithRelationsSchema.static;
+
+export const ClassCreateUpdateSchema = t.Omit(ClassSchema, [
+    "id",
+    "createdAt",
+    "updatedAt",
+]);
+
+export type ClassCreateUpdate = typeof ClassCreateUpdateSchema.static;

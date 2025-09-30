@@ -1,20 +1,34 @@
 import { t } from "elysia";
+import { EnrollmentSchema } from "../enrollment/enrollment.schema";
+import { CourseGroupSchema } from "../courseGroup/courseGroup.schema";
 
-export const courseSchema = t.Object({
-  id: t.String({ format: "cuid", minLength: 25, maxLength: 25 }),
-  code: t.String({ maxLength: 10 }),
-  name: t.String({ maxLength: 100 }),
-  duration: t.Integer({ min: 1, max: 12 }),
+export const CourseSchema = t.Object({
+  id: t.String(),
+  code: t.String(),
+  name: t.String(),
+  duration: t.Number(),
   examType: t.UnionEnum(["InSchedule", "OutSchedule"]),
   createdAt: t.Date(),
   updatedAt: t.Date(),
 });
 
-export const courseCreateUpdateSchema = t.Omit(courseSchema, [
+export type Course = typeof CourseSchema.static;
+
+export const CourseWithRelationsSchema = t.Composite([
+  CourseSchema,
+  t.Object({
+    enrollments: t.Array(t.Omit(EnrollmentSchema, ["createdAt", "updatedAt"])),
+    courseGroups: t.Array(t.Omit(CourseGroupSchema, ["createdAt", "updatedAt"])),
+  }),
+]);
+
+export type CourseWithRelations = typeof CourseWithRelationsSchema.static;
+
+
+export const CourseCreateUpdateSchema = t.Omit(CourseSchema, [
   "id",
   "createdAt",
   "updatedAt",
 ]);
 
-export type CourseSchema = typeof courseSchema.static;
-export type CourseCreateUpdateSchema = typeof courseCreateUpdateSchema.static;
+export type CourseCreateUpdate = typeof CourseCreateUpdateSchema.static;

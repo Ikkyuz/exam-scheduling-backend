@@ -1,68 +1,200 @@
-import { DepartmentService } from "../department/department.service";
+import Elysia, { t } from "elysia";
+import { DepartmentSchema, DepartmentWithRelationsSchema, DepartmentCreateUpdateSchema } from "./department.schema";
+import { DepartmentService } from "./department.service";
 
-export namespace DepartmentController {
-  export const findAll = async ({ set }: any) => {
-    try {
-      const departments = await DepartmentService.findAll();
-      set.status = "OK";
-      return { success: true, data: departments, message: "Departments retrieved successfully" };
-    } catch {
-      set.status = "Internal Server Error";
-      return { success: false, message: "Failed to retrieve departments" };
-    }
-  };
+export const departmentController = new Elysia({ prefix: "/departments" })
+    .post(
+        "/",
+        async ({ body, set }) => {
+            try {
+                const newDepartment = await DepartmentService.createMany(body);
+                set.status = 201;
+                return { newDepartment, message: "Department created successfully" };
+            } catch (error: any) {
+                if (error.message.includes("already exists")) {
+                    set.status = "Conflict"; // 409
+                    return { message: error.message };
+                }
+                set.status = "Internal Server Error"; // 500
+                return { message: error.message || "Internal Server Error" };
+            }
+        },
+        {
+            body: t.Array(DepartmentCreateUpdateSchema),
+            response: {
+                201: t.Object({
+                    newDepartment: t.Array(DepartmentSchema),
+                    message: t.String(),
+                }),
+                409: t.Object({ message: t.String() }),
+                500: t.Object({ message: t.String() }),
+            },
+            tags: ["Departments"],
+        }
+    )
+    .get(
+        "/",
+        async ({ query, set }) => {
+            try {
+                const page = query.page ? Number(query.page) : 1;
+                const itemsPerPage = query.itemsPerPage ? Number(query.itemsPerPage) : 10;
+                const search = query.search;
 
-  export const findById = async ({ params, set }: any) => {
-    const department = await DepartmentService.findById(params.id);
-    if (!department) {
-      set.status = 404;
-      return { success: false, message: "Department not found" };
-    }
-    set.status = "OK";
-    return { success: true, data: department, message: "Department retrieved successfully" };
-  };
+                const result = await DepartmentService.findAll({ page, itemsPerPage, search });
 
-  export const createMany = async ({ body, set }: any) => {
-    try {
-      const result = await DepartmentService.createMany(body);
-      set.status = 201;
-      return { success: true, count: result.count,  message: "Departments created successfully" };
-    } catch {
-      set.status = 500;
-      return { success: false, message: "Failed to create departments" };
-    }
-  };
-
-  export const updateById = async ({ params, body, set }: any) => {
-    try {
-      const updated = await DepartmentService.updateById(params.id, body);
-      set.status = "OK";
-      return { success: true, data: updated , message: "Department updated successfully" };
-    } catch {
-      set.status = "Internal Server Error";
-      return { success: false, message: "Failed to update department" };
-    }
-  };
-
-  export const deleteAll = async ({ set }: any) => {
-    try {
-      const result = await DepartmentService.deleteAll();
-      set.status = "OK";
-      return { success: true, count: result.count , message: "All departments deleted successfully" };
-    } catch {
-      set.status = "Internal Server Error";
-      return { success: false, message: "Failed to delete departments" };
-    }
-  };
-
-  export const deleteById = async ({ params, set }: any) => {
-    try {
-      await DepartmentService.deleteById(params.id);
-      set.status = "OK";
-      return { success: true, message: "Department deleted successfully" };
-    } catch {
-      set.status = "Internal Server Error";
-      return { success: false, message: "Failed to delete department" };
-    }
-  };
-}
+                if (result.data.length === 0 && result.meta_data.total > 0) {
+                    set.status = "No Content"; // 204
+                    return { message: "No content for this page/query." };
+                }
+                
+                return result;
+            } catch (error: any) {
+                set.status = "Internal Server Error"; // 500
+                return { message: error.message || "Internal Server Error" };
+            }
+        },
+        {
+            query: t.Object({
+                page: t.Optional(t.Numeric()),
+                itemsPerPage: t.Optional(t.Numeric()),
+                search: t.Optional(t.String()),
+            }),
+            response: {
+                200: t.Object({
+                    data: t.Array(DepartmentWithRelationsSchema),
+                    meta_data: t.Object({
+                        page: t.Number(),
+                        itemsPerPage: t.Number(),
+                        total: t.Number(),
+                        totalPages: t.Number(),
+                        nextPage: t.Boolean(),
+                        previousPage: t.Boolean(),
+                    }),
+                }),
+                204: t.Object({ message: t.String() }), // กรณีไม่มีข้อมูลในหน้านั้นๆ
+                500: t.Object({ message: t.String() }),
+            },
+            tags: ["Departments"],
+        }
+    )
+    .get(
+        "/:id",
+        async ({ params, set }) => {
+            try {
+                const department = await DepartmentService.findById(params.id);
+                if (!department) {
+                    set.status = "Not Found"; // 404
+                    return { message: `Department with ID ${params.id} not found.` };
+                }
+                return department;
+            } catch (error: any) {
+                if (error.message.includes("not found")) {
+                    set.status = "Not Found"; // 404
+                    return { message: error.message };
+                }
+                set.status = "Internal Server Error"; // 500
+                return { message: error.message || "Internal Server Error" };
+            }
+        },
+        {
+            params: t.Object({ id: t.String() }),
+            response: {
+                200: DepartmentSchema,
+                404: t.Object({ message: t.String() }),
+                500: t.Object({ message: t.String() }),
+            },
+            tags: ["Departments"],
+        }
+    )
+    .patch(
+        "/:id",
+        async ({ params, body, set }) => {
+            try {
+                const updatedDepartment = await DepartmentService.update(params.id, body);
+                set.status = "OK"; // 200
+                return { updatedDepartment, message: "Department updated successfully" };
+            } catch (error: any) {
+                if (error.message.includes("not found")) {
+                    set.status = "Not Found"; // 404
+                    return { message: error.message };
+                }
+                 if (error.message.includes("Unique constraint violated")) {
+                    set.status = "Conflict"; // 409
+                    return { message: error.message };
+                }
+                set.status = "Internal Server Error"; // 500
+                return { message: error.message || "Internal Server Error" };
+            }
+        },
+        {
+            params: t.Object({ id: t.String() }),
+            body: t.Partial(DepartmentCreateUpdateSchema),
+            response: {
+                200: t.Object({
+                    updatedDepartment: DepartmentSchema,
+                    message: t.String(),
+                }),
+                404: t.Object({ message: t.String() }),
+                409: t.Object({ message: t.String() }),
+                500: t.Object({ message: t.String() }),
+            },
+            tags: ["Departments"],
+        }
+    )
+    .delete(
+        "/",
+        async ({ set }) => {
+            try {
+                const deletedDepartments = await DepartmentService.deleteAll();
+                set.status = "OK"; // 200
+                return { deletedDepartments, message: "Departments deleted successfully" };
+            } catch (error: any) {
+                set.status = "Internal Server Error"; // 500
+                return { message: error.message || "Internal Server Error" };
+            }
+        },
+        {
+            response: {
+                200: t.Object({
+                    deletedDepartments: t.Array(DepartmentSchema),
+                    message: t.String(),
+                }),
+                500: t.Object({ message: t.String() }),
+            },
+            tags: ["Departments"],
+        }
+    )
+    .delete(
+        "/:id",
+        async ({ params, set }) => {
+            try {
+                const deletedDepartment = await DepartmentService.deleteById(params.id);
+                set.status = "OK"; // 200
+                return { deletedDepartment, message: "Department deleted successfully" };
+            } catch (error: any) {
+                if (error.message.includes("not found")) {
+                    set.status = "Not Found"; // 404
+                    return { message: error.message };
+                }
+                if (error.message.includes("Cannot delete department because it has related records")) {
+                    set.status = "Conflict"; // 409
+                    return { message: error.message };
+                }
+                set.status = "Internal Server Error"; // 500
+                return { message: error.message || "Internal Server Error" };
+            }
+        },
+        {
+            params: t.Object({ id: t.String() }),
+            response: {
+                200: t.Object({
+                    deletedDepartment: DepartmentSchema,
+                    message: t.String(),
+                }),
+                404: t.Object({ message: t.String() }),
+                409: t.Object({ message: t.String() }),
+                500: t.Object({ message: t.String() }),
+            },
+            tags: ["Departments"],
+        }
+    );

@@ -1,73 +1,218 @@
-import { TeacherService } from "./teacher.service";
+import Elysia, { t } from "elysia";
+import {
+  TeacherSchema,
+  TeacherCreateUpdateSchema,
+} from "../teacher/teacher.schema";
+import { TeacherService } from "../teacher/teacher.service";
 
-export namespace TeacherController {
-  export const findAll = async ({ set }: any) => {
-    try {
-      const teachers = await TeacherService.findAll();
-      set.status = "OK";
-      return { success: true, data: teachers };
-    } catch {
-      set.status = "Internal Server Error";
-      return { success: false, message: "Internal Server Error" };
-    }
-  };
-
-  export const findById = async ({ params, set }: any) => {
-    try {
-      const teacher = await TeacherService.findById(params.id);
-      if (!teacher) {
-        set.status = "Not Found";
-        return { success: false, message: "Teacher not found" };
+export const teacherController = new Elysia({ prefix: "/teachers" })
+  .post(
+    "/",
+    async ({ body, set }) => {
+      try {
+        const newTeacher = await TeacherService.createMany(body);
+        set.status = 201;
+        return { newTeacher, message: "Teacher created successfully" };
+      } catch (error: any) {
+        if (error.message.includes("Bad Request")) {
+          set.status = "Bad Request"; // 400
+          return { message: error.message }; // Invalid departmentId
+        }
+        if (error.message.includes("already exists")) {
+          set.status = "Conflict"; // 409
+          return { message: error.message }; // Unique violation (tel)
+        }
+        set.status = "Internal Server Error"; // 500
+        return { message: error.message || "Internal Server Error" };
       }
-      set.status = "OK";
-      return { success: true, data: teacher };
-    } catch {
-      set.status = 'Internal Server Error';
-      return { success: false, message: "Internal Server Error" };
+    },
+    {
+      body: t.Array(TeacherCreateUpdateSchema),
+      response: {
+        201: t.Object({
+          newTeacher: t.Array(TeacherCreateUpdateSchema),
+          message: t.String(),
+        }),
+        400: t.Object({ message: t.String() }),
+        409: t.Object({ message: t.String() }),
+        500: t.Object({ message: t.String() }),
+      },
+      tags: ["Teachers"],
     }
-  };
+  )
+  .get(
+    "/",
+    async ({ query, set }) => {
+      try {
+        const page = query.page ? Number(query.page) : 1;
+        const itemsPerPage = query.itemsPerPage
+          ? Number(query.itemsPerPage)
+          : 10;
+        const search = query.search;
 
-  export const createMany = async ({ body, set }: any) => {
-    try {
-      const newTeachers = await TeacherService.createMany(body);
-      set.status = 'Created';
-      return { success: true, data: newTeachers };
-    } catch {
-      set.status = 'Internal Server Error';
-      return { success: false, message: "Internal Server Error" };
-    }
-  };
+        const result = await TeacherService.findAll({
+          page,
+          itemsPerPage,
+          search,
+        });
 
-  export const updateById = async ({ params, body, set }: any) => {
-    try {
-      const updated = await TeacherService.updateById(params.id, body);
-      set.status = 'OK';
-      return { success: true, data: updated };
-    } catch {
-      set.status = 'Internal Server Error';
-      return { success: false, message: "Internal Server Error" };
-    }
-  };
+        if (result.data.length === 0 && result.meta_data.total > 0) {
+          set.status = "No Content"; // 204
+          return { message: "No content for this page/query." };
+        }
 
-  export const deleteAll = async ({ set }: any) => {
-    try {
-      await TeacherService.deleteAll();
-      set.status = 'OK';
-      return { success: true, message: "All teachers deleted successfully" };
-    } catch {
-      set.status = 'Internal Server Error';
-      return { success: false, message: "Internal Server Error" };
+        return result;
+      } catch (error: any) {
+        set.status = "Internal Server Error"; // 500
+        return { message: error.message || "Internal Server Error" };
+      }
+    },
+    {
+      query: t.Object({
+        page: t.Optional(t.Numeric()),
+        itemsPerPage: t.Optional(t.Numeric()),
+        search: t.Optional(t.String()),
+      }),
+      response: {
+        200: t.Object({
+          data: t.Array(TeacherSchema),
+          meta_data: t.Object({
+            page: t.Number(),
+            itemsPerPage: t.Number(),
+            total: t.Number(),
+            totalPages: t.Number(),
+            nextPage: t.Boolean(),
+            previousPage: t.Boolean(),
+          }),
+        }),
+        204: t.Object({ message: t.String() }),
+        500: t.Object({ message: t.String() }),
+      },
+      tags: ["Teachers"],
     }
-  };
-
-  export const deleteById = async ({ params, set }: any) => {
-    try {
-      await TeacherService.deleteById(params.id);
-      set.status = 'OK';
-      return { success: true, message: "Teacher deleted successfully" };
-    } catch {
-      set.status = 'Internal Server Error';
-      return { success: false, message: "Internal Server Error" };
+  )
+  .get(
+    "/:id",
+    async ({ params, set }) => {
+      try {
+        const teacher = await TeacherService.findById(params.id);
+        return teacher;
+      } catch (error: any) {
+        if (error.message.includes("not found")) {
+          set.status = "Not Found"; // 404
+          return { message: error.message };
+        }
+        set.status = "Internal Server Error"; // 500
+        return { message: error.message || "Internal Server Error" };
+      }
+    },
+    {
+      params: t.Object({ id: t.String() }),
+      response: {
+        200: TeacherSchema,
+        404: t.Object({ message: t.String() }),
+        500: t.Object({ message: t.String() }),
+      },
+      tags: ["Teachers"],
     }
-  };
-}
+  )
+  .patch(
+    "/:id",
+    async ({ params, body, set }) => {
+      try {
+        const updatedTeacher = await TeacherService.update(params.id, body);
+        set.status = "OK"; // 200
+        return { updatedTeacher, message: "Teacher updated successfully" };
+      } catch (error: any) {
+        if (error.message.includes("not found")) {
+          set.status = "Not Found"; // 404
+          return { message: error.message };
+        }
+        if (error.message.includes("already exists")) {
+          set.status = "Conflict"; // 409
+          return { message: error.message };
+        }
+        if (error.message.includes("Bad Request")) {
+          set.status = "Bad Request"; // 400
+          return { message: error.message };
+        }
+        set.status = "Internal Server Error"; // 500
+        return { message: error.message || "Internal Server Error" };
+      }
+    },
+    {
+      params: t.Object({ id: t.String() }),
+      body: t.Partial(TeacherCreateUpdateSchema),
+      response: {
+        200: t.Object({
+          updatedTeacher: TeacherSchema,
+          message: t.String(),
+        }),
+        400: t.Object({ message: t.String() }),
+        404: t.Object({ message: t.String() }),
+        409: t.Object({ message: t.String() }),
+        500: t.Object({ message: t.String() }),
+      },
+      tags: ["Teachers"],
+    }
+  )
+  .delete(
+    "/",
+    async ({ set }) => {
+      try {
+        await TeacherService.deleteAll();
+        set.status = "OK"; // 200
+        return { message: "Teachers deleted successfully" };
+      } catch (error: any) {
+        set.status = "Internal Server Error"; // 500
+        return { message: error.message || "Internal Server Error" };
+      }
+    },
+    {
+      response: {
+        200: t.Object({
+          message: t.String(),
+        }),
+        500: t.Object({ message: t.String() }),
+      },
+      tags: ["Teachers"],
+    }
+  )
+  .delete(
+    "/:id",
+    async ({ params, set }) => {
+      try {
+        const deletedTeacher = await TeacherService.deleteById(params.id);
+        set.status = "OK"; // 200
+        return { deletedTeacher, message: "Teacher deleted successfully" };
+      } catch (error: any) {
+        if (error.message.includes("not found")) {
+          set.status = "Not Found"; // 404
+          return { message: error.message };
+        }
+        if (
+          error.message.includes(
+            "Cannot delete teacher because it has related records"
+          )
+        ) {
+          set.status = "Conflict"; // 409
+          return { message: error.message };
+        }
+        set.status = "Internal Server Error"; // 500
+        return { message: error.message || "Internal Server Error" };
+      }
+    },
+    {
+      params: t.Object({ id: t.String() }),
+      response: {
+        200: t.Object({
+          deletedTeacher: TeacherSchema,
+          message: t.String(),
+        }),
+        404: t.Object({ message: t.String() }),
+        409: t.Object({ message: t.String() }),
+        500: t.Object({ message: t.String() }),
+      },
+      tags: ["Teachers"],
+    }
+  );

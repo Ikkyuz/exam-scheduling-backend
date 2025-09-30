@@ -1,31 +1,106 @@
-import prisma from "../../providers/database/database.provider";
-import { TeacherCreateUpdateSchema } from "./teacher.schema";
+import prisma from "@/providers/database/database.provider";
+import { TeacherCreateUpdate } from "./teacher.schema";
 
 export namespace TeacherRepository {
-  export async function createMany(teachers: TeacherCreateUpdateSchema[]) {
-    return await prisma.teacher.createMany({
+  export async function createMany(
+    teachers: TeacherCreateUpdate[]
+  ) {
+    for (const teacher of teachers) {
+      const department = await prisma.department.findUnique({
+        where: { id: teacher.departmentId },
+      });
+
+      if (!department) {
+        throw new Error(`Department with id ${teacher.departmentId} not found`);
+      }
+    }
+
+    await prisma.teacher.createMany({
       data: teachers,
-      skipDuplicates: true,
     });
   }
 
-  export async function findAll() {
-    return await prisma.teacher.findMany();
+  export async function findAll(options: {
+    skip: number;
+    take: number;
+    search?: string;
+  }) {
+    const where = options.search
+      ? {
+          OR: [
+            { name: { contains: options.search } },
+            { tel: { contains: options.search } },
+            { department: { name: { contains: options.search } } },
+          ],
+        }
+      : {};
+
+    return prisma.teacher.findMany({
+      where,
+      include: {
+        department: true,
+      },
+      take: options.take,
+      skip: options.skip,
+      orderBy: { createdAt: "desc" },
+    });
   }
 
-  export async function findById(id: string) {
-    return await prisma.teacher.findUnique({ where: { id } });
+  export async function findById(teacherId: string) {
+    return await prisma.teacher.findUnique({
+      where: { id: teacherId },
+      include: {
+        department: true,
+      },
+    });
   }
 
-  export async function updateById(id: string, data: Partial<TeacherCreateUpdateSchema>) {
-    return await prisma.teacher.update({ where: { id }, data });
+  export async function update(
+    teacherId: string,
+    teacher: Partial<TeacherCreateUpdate>
+  ) {
+    // ตรวจสอบ Foreign Key หากมีการส่ง departmentId มาอัปเดต
+    if (teacher.departmentId) {
+      const department = await prisma.department.findUnique({
+        where: { id: teacher.departmentId },
+      });
+      if (!department) {
+        throw new Error(`Department with id ${teacher.departmentId} not found`);
+      }
+    }
+
+    return prisma.teacher.update({
+      where: { id: teacherId },
+      data: teacher,
+      include: {
+        department: true,
+      },
+    });
   }
 
   export async function deleteAll() {
-    return await prisma.teacher.deleteMany();
+    return prisma.teacher.deleteMany();
   }
 
-  export async function deleteById(id: string) {
-    return await prisma.teacher.delete({ where: { id } });
+  export async function deleteById(teacherId: string) {
+    return prisma.teacher.delete({
+      where: { id: teacherId },
+      include: {
+        department: true,
+      },
+    });
+  }
+
+  export async function countAll(search?: string) {
+    const where = search
+      ? {
+          OR: [
+            { name: { contains: search } },
+            { tel: { contains: search } },
+            { department: { name: { contains: search } } },
+          ],
+        }
+      : {};
+    return await prisma.teacher.count({ where });
   }
 }
