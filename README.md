@@ -37,7 +37,7 @@ bun run dev
 DATABASE_URL="mysql://root:mysecretpassword@localhost:3306/docs"
 ```
 
-### 🛠 Prisma Commands
+## 🛠 Prisma Commands
 
 # init prisma
 
@@ -69,7 +69,7 @@ bun x prisma migrate reset
 bun x prisma studio
 ```
 
-### 🐳 Docker Workflow
+## 🐳 Docker Workflow
 
 # Build docker image
 
