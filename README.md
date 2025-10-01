@@ -103,6 +103,7 @@ docker compose -f compose.caddy.yaml up -d
 
 # 🔑 Env Setup for Docker Compose
 หากใช้ PostgreSQL สำหรับ Docker Compose ให้แก้ค่าใน .env:
+
 ```sh
 DATABASE_URL="postgresql://<user>:<password>@<postgres uri>:5432/docs"
 ```
