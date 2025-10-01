@@ -1,14 +1,14 @@
 services:
   # ╭─ postgres ─────────────────────────────────────────────────────────╮
   postgres:
-    image: postgres
-    container_name: auth-db
+    image: exam-scheduling-postgres
+    container_name: exam-scheduling-db
     restart: unless-stopped # unless-stopped, on-failure, always, "no"
     user: postgres
     volumes:
       - ./db-data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=auth
+      - POSTGRES_DB=exam-scheduling
       - POSTGRES_PASSWORD=mysecretpassword
       - POSTGRES_USER=postgres
     ports:

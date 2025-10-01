@@ -1,0 +1,101 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/providers/database/generated"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Department {
+  id   Int    @id @default(autoincrement())
+  name String @db.VarChar(255)
+
+  classes  Class[]
+  teachers Teacher[]
+
+  @@index([name])
+}
+
+model Course {
+  id       Int    @id @default(autoincrement())
+  code     String @unique
+  name     String
+  duration Int
+  examType String
+
+  enrollments  Enrollment[]
+  courseGroups CourseGroup[]
+}
+
+model Class {
+  id           Int    @id @default(autoincrement())
+  name         String
+  level        String
+  classYear    String
+  departmentId Int
+  amount       Int
+
+  department  Department   @relation(fields: [departmentId], references: [id])
+  enrollments Enrollment[]
+
+  @@index([departmentId])
+}
+
+model Enrollment {
+  id       Int @id @default(autoincrement())
+  classId  Int
+  courseId Int
+
+  class  Class  @relation(fields: [classId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
+
+  @@unique([classId, courseId])
+  @@index([classId])
+  @@index([courseId])
+}
+
+model CourseGroup {
+  id       Int @id @default(autoincrement())
+  courseId Int
+
+  course Course @relation(fields: [courseId], references: [id])
+
+  @@index([courseId])
+}
+
+model Room {
+  id         Int    @id @default(autoincrement())
+  roomNumber String @unique
+  building   String
+  floor      String
+  capacity   Int
+}
+
+model Teacher {
+  id           Int    @id @default(autoincrement())
+  name         String
+  departmentId Int
+  tel          String
+
+  department   Department    @relation(fields: [departmentId], references: [id])
+  proctorPairs ProctorPair[]
+
+  @@index([departmentId])
+}
+
+model ProctorPair {
+  id        Int @id @default(autoincrement())
+  teacherId Int
+
+  teacher Teacher @relation(fields: [teacherId], references: [id])
+
+  @@index([teacherId])
+}
