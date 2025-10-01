@@ -6,200 +6,208 @@ import {
 } from "./class.schema";
 import { ClassService } from "./class.service";
 
-export const classController = new Elysia({ prefix: "/class" })
-  .post(
-    "/",
-    async ({ body, set }) => {
-      try {
-        const result = await ClassService.createMany(body);
-        set.status = "Created";
-        return { data: result, message: "Classes created successfully" };
-      } catch (error: any) {
-        if (error.message.includes("already exists")) { 
-          set.status = "Conflict";
-          return { message: error.message };
+export namespace ClassController {
+  export const classController = new Elysia({ prefix: "/class" })
+    .post(
+      "/",
+      async ({ body, set }) => {
+        try {
+          const result = await ClassService.createMany(body);
+          set.status = "Created";
+          return { data: result, message: "Classes created successfully" };
+        } catch (error: any) {
+          if (error.message.includes("already exists")) {
+            set.status = "Conflict";
+            return { message: error.message };
+          }
+          set.status = "Internal Server Error";
+          return { message: error.message || "Internal Server Error" };
         }
-        set.status = "Internal Server Error";
-        return { message: error.message || "Internal Server Error" };
-      }
-    },
-    {
-      body: t.Array(ClassCreateUpdateSchema),
-      response: {
-        201: t.Object({
-          data: t.Array(ClassSchema),
-          message: t.String(),
-        }),
-        409: t.Object({ message: t.String() }),
-        500: t.Object({ message: t.String() }),
       },
-      tags: ["Classes"],
-    }
-  )
-
-  .get(
-    "/",
-    async ({ query, set }) => {
-      try {
-        const page = query.page ? Number(query.page) : 1;
-        const itemsPerPage = query.itemsPerPage
-          ? Number(query.itemsPerPage)
-          : 10;
-        const search = query.search ?? "";
-
-        // เรียก service
-        const result = await ClassService.findAll({ page, itemsPerPage, search });
-
-        if (result.data.length === 0 && result.meta_data.total > 0) {
-          set.status = "No Content"; // 204
-          return { message: "No content for this page/query." };
-        }
-
-        // แปลงข้อมูลให้ตรง schema
-        const transformed = {
-          data: result.data.map((cls) => ({
-            ...cls,
-            // department ต้องเป็น array
-            department: cls.department ? [{ id: cls.department.id, name: cls.department.name }] : [],
-            // enrollment ต้องมีทุกตัว
-            enrollment: cls.enrollments ?? [],
-            // level ต้องตรง string union
-            level: cls.level as "Pvoc" | "Pvs",
-          })),
-          meta_data: result.meta_data,
-        };
-
-        return transformed;
-      } catch (error: any) {
-        set.status = "Internal Server Error"; // 500
-        return { message: error.message || "Internal Server Error" };
-      }
-    },
-    {
-      query: t.Object({
-        page: t.Optional(t.Numeric()),
-        itemsPerPage: t.Optional(t.Numeric()),
-        search: t.Optional(t.String()),
-      }),
-      response: {
-        200: t.Object({
-          data: t.Array(ClassWithRelationsSchema),
-          meta_data: t.Object({
-            page: t.Number(),
-            itemsPerPage: t.Number(),
-            total: t.Number(),
-            totalPages: t.Number(),
-            nextPage: t.Boolean(),
-            previousPage: t.Boolean(),
+      {
+        body: t.Array(ClassCreateUpdateSchema),
+        response: {
+          201: t.Object({
+            data: t.Array(ClassSchema),
+            message: t.String(),
           }),
+          409: t.Object({ message: t.String() }),
+          500: t.Object({ message: t.String() }),
+        },
+        tags: ["Classes"],
+      }
+    )
+
+    .get(
+      "/",
+      async ({ query, set }) => {
+        try {
+          const page = query.page ? Number(query.page) : 1;
+          const itemsPerPage = query.itemsPerPage
+            ? Number(query.itemsPerPage)
+            : 10;
+          const search = query.search ?? "";
+
+          // เรียก service
+          const result = await ClassService.findAll({
+            page,
+            itemsPerPage,
+            search,
+          });
+
+          if (result.data.length === 0 && result.meta_data.total > 0) {
+            set.status = "No Content"; // 204
+            return { message: "No content for this page/query." };
+          }
+
+          // แปลงข้อมูลให้ตรง schema
+          const transformed = {
+            data: result.data.map((cls) => ({
+              ...cls,
+              // department ต้องเป็น array
+              department: cls.department
+                ? [{ id: cls.department.id, name: cls.department.name }]
+                : [],
+              // enrollment ต้องมีทุกตัว
+              enrollment: cls.enrollments ?? [],
+              // level ต้องตรง string union
+              level: cls.level as "Pvoc" | "Pvs",
+            })),
+            meta_data: result.meta_data,
+          };
+
+          return transformed;
+        } catch (error: any) {
+          set.status = "Internal Server Error"; // 500
+          return { message: error.message || "Internal Server Error" };
+        }
+      },
+      {
+        query: t.Object({
+          page: t.Optional(t.Numeric()),
+          itemsPerPage: t.Optional(t.Numeric()),
+          search: t.Optional(t.String()),
         }),
-        204: t.Object({ message: t.String() }),
-        500: t.Object({ message: t.String() }),
-      },
-      tags: ["Classes"],
-    }
-  )
+        response: {
+          200: t.Object({
+            data: t.Array(ClassWithRelationsSchema),
+            meta_data: t.Object({
+              page: t.Number(),
+              itemsPerPage: t.Number(),
+              total: t.Number(),
+              totalPages: t.Number(),
+              nextPage: t.Boolean(),
+              previousPage: t.Boolean(),
+            }),
+          }),
+          204: t.Object({ message: t.String() }),
+          500: t.Object({ message: t.String() }),
+        },
+        tags: ["Classes"],
+      }
+    )
 
-  .get(
-    "/:id",
-    async ({ params, set }) => {
-      try {
-        const result = await ClassService.findById(params.id);
-        return result;
-      } catch (error: any) {
-        if (error.message === "Course not found") {
-          set.status = "Not Found";
-          return error.message;
+    .get(
+      "/:id",
+      async ({ params, set }) => {
+        try {
+          const result = await ClassService.findById(params.id);
+          return result;
+        } catch (error: any) {
+          if (error.message === "Course not found") {
+            set.status = "Not Found";
+            return error.message;
+          }
+          set.status = "Internal Server Error";
+          if ("message" in error) return error.message;
+          return "Internal Server Error";
         }
-        set.status = "Internal Server Error";
-        if ("message" in error) return error.message;
-        return "Internal Server Error";
-      }
-    },
-    {
-      params: t.Object({ id: t.String() }),
-      response: {
-        200: t.Object({ data: ClassSchema }),
-        404: t.Object({ message: t.String() }),
-        500: t.String(),
       },
-      tags: ["Classes"],
-    }
-  )
+      {
+        params: t.Object({ id: t.String() }),
+        response: {
+          200: t.Object({ data: ClassSchema }),
+          404: t.Object({ message: t.String() }),
+          500: t.String(),
+        },
+        tags: ["Classes"],
+      }
+    )
 
-  .patch(
-    "/:id",
-    async ({ params, body, set }) => {
-      try {
-        const result = await ClassService.update(params.id, body);
-        set.status = "OK";
-        return result;
-      } catch (error: any) {
-        if (error.message === "Course not found") {
-          set.status = "Not Found";
-          return error.message;
+    .patch(
+      "/:id",
+      async ({ params, body, set }) => {
+        try {
+          const result = await ClassService.update(params.id, body);
+          set.status = "OK";
+          return result;
+        } catch (error: any) {
+          if (error.message === "Course not found") {
+            set.status = "Not Found";
+            return error.message;
+          }
+          set.status = "Internal Server Error";
+          if ("message" in error) return error.message;
+          return "Internal Server Error";
         }
-        set.status = "Internal Server Error";
-        if ("message" in error) return error.message;
-        return "Internal Server Error";
-      }
-    },
-    {
-      params: t.Object({ id: t.String() }),
-      body: t.Partial(ClassCreateUpdateSchema),
-      response: {
-        200: t.Object({ data: ClassSchema }),
-        404: t.Object({ message: t.String() }),
-        500: t.String(),
       },
-      tags: ["Classes"],
-    }
-  )
-
-  .delete(
-    "/",
-    async ({ set }) => {
-      try {
-        const result = await ClassService.deleteAll();
-        return result;
-      } catch (error: any) {
-        set.status = "Internal Server Error";
-        if ("message" in error) return error.message;
-        return "Internal Server Error";
+      {
+        params: t.Object({ id: t.String() }),
+        body: t.Partial(ClassCreateUpdateSchema),
+        response: {
+          200: t.Object({ data: ClassSchema }),
+          404: t.Object({ message: t.String() }),
+          500: t.String(),
+        },
+        tags: ["Classes"],
       }
-    },
-    {
-      response: {
-        200: t.Object({ message: t.String() }),
-        500: t.Object({ message: t.String() }),
-      },
-      tags: ["Classes"],
-    }
-  )
+    )
 
-  .delete(
-    "/:id",
-    async ({ params, set }) => {
-      try {
-        const result = await ClassService.deleteById(params.id);
-        return result;
-      } catch (error: any) {
-        if (error.message === "Course not found") {
-          set.status = "Not Found";
-          return error.message;
+    .delete(
+      "/",
+      async ({ set }) => {
+        try {
+          const result = await ClassService.deleteAll();
+          return result;
+        } catch (error: any) {
+          set.status = "Internal Server Error";
+          if ("message" in error) return error.message;
+          return "Internal Server Error";
         }
-        set.status = "Internal Server Error";
-        if ("message" in error) return error.message;
-        return "Internal Server Error";
-      }
-    },
-    {
-      params: t.Object({ id: t.String() }),
-      response: {
-        200: t.Object({ message: t.String() }),
-        404: t.Object({ message: t.String() }),
-        500: t.String(),
       },
-      tags: ["Classes"],
-    }
-  );
+      {
+        response: {
+          200: t.Object({ message: t.String() }),
+          500: t.Object({ message: t.String() }),
+        },
+        tags: ["Classes"],
+      }
+    )
+
+    .delete(
+      "/:id",
+      async ({ params, set }) => {
+        try {
+          const result = await ClassService.deleteById(params.id);
+          return result;
+        } catch (error: any) {
+          if (error.message === "Course not found") {
+            set.status = "Not Found";
+            return error.message;
+          }
+          set.status = "Internal Server Error";
+          if ("message" in error) return error.message;
+          return "Internal Server Error";
+        }
+      },
+      {
+        params: t.Object({ id: t.String() }),
+        response: {
+          200: t.Object({ message: t.String() }),
+          404: t.Object({ message: t.String() }),
+          500: t.String(),
+        },
+        tags: ["Classes"],
+      }
+    );
+}

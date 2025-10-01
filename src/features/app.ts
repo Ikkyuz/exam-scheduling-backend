@@ -1,21 +1,21 @@
 import { Elysia } from "elysia";
-import { departmentController } from "./department/department.controller";
-import { courseController } from "./course/course.controller";
-import { classController } from "./class/class.controller";
-import { courseGroupController } from "./courseGroup/courseGroup.controller";
-import { enrollmentController } from "./enrollment/enrollment.controller";
-import { roomController } from "./room/room.controller";
-import { teacherController } from "./teacher/teacher.controller";
-import { proctorPairController } from "./proctorPair/proctorPair.controller";
+import { DepartmentController } from "./department/department.controller";
+import { CourseController } from "./course/course.controller";
+import { ClassController } from "./class/class.controller";
+import { CourseGroupController } from "./courseGroup/courseGroup.controller";
+import { EnrollmentController } from "./enrollment/enrollment.controller";
+import { RoomController } from "./room/room.controller";
+import { TeacherController } from "./teacher/teacher.controller";
+import { ProctorPairController } from "./proctorPair/proctorPair.controller";
 
 export const app = () => {
   return new Elysia({ name: "app", prefix: "/api" })
-    .use(departmentController)
-    .use(courseController)
-    .use(classController)
-    .use(courseGroupController)
-    .use(enrollmentController)
-    .use(roomController)
-    .use(teacherController)
-    .use(proctorPairController)
+    .use(DepartmentController.departmentController)
+    .use(CourseController.courseController)
+    .use(ClassController.classController)
+    .use(CourseGroupController.courseGroupController)
+    .use(EnrollmentController.enrollmentController)
+    .use(RoomController.roomController)
+    .use(TeacherController.teacherController)
+    .use(ProctorPairController.proctorPairController)
 };
