@@ -15,7 +15,7 @@ export namespace RoomRepository {
     search?: string;
   }) {
     return prisma.room.findMany({
-      take: options.take, 
+      take: options.take,
       skip: options.skip,
     });
   }
@@ -26,15 +26,10 @@ export namespace RoomRepository {
     });
   }
 
-  export async function update(
-    id: string,
-    room: Partial<RoomCreateUpdate>
-  ) {
+  export async function update(id: string, room: Partial<RoomCreateUpdate>) {
     return prisma.room.update({
       where: { id: id },
-      data: {
-        ...room,
-      },
+      data: room,
     });
   }
 
@@ -51,12 +46,10 @@ export namespace RoomRepository {
   export async function countAll(search?: string) {
     const where = search
       ? {
-          OR: [
-            { roomNumber: { contains: search } },
-            { building: { contains: search } },
-          ],
+          roomNumber: { contains: search },
+          building: { contains: search },
         }
       : {};
-    return await prisma.room.count({ where });
+    return prisma.room.count({ where });
   }
 }

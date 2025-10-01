@@ -17,7 +17,7 @@ export namespace DepartmentRepository {
         teachers: true,
       },
       take: options.take,
-      skip: options.skip, 
+      skip: options.skip,
     });
   }
 
@@ -60,11 +60,7 @@ export namespace DepartmentRepository {
   }
 
   export async function countAll(search?: string) {
-    const where = search
-      ? {
-          OR: [{ name: { contains: search } }],
-        }
-      : {};
+    const where = search ? { name: { contains: search } } : {};
     return await prisma.department.count({ where });
   }
 }

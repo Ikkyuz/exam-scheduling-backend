@@ -3,10 +3,10 @@ import { CourseCreateUpdate } from "./course.schema";
 
 export namespace CourseRepository {
   export async function createMany(course: CourseCreateUpdate[]) {
-  return prisma.course.createMany({
-    data: course,
-  });
-}
+    return prisma.course.createMany({
+      data: course,
+    });
+  }
 
   export async function findAll(options: {
     skip: number;
@@ -14,7 +14,7 @@ export namespace CourseRepository {
     search?: string;
   }) {
     return prisma.course.findMany({
-      include: { 
+      include: {
         enrollments: {
           include: { class: true },
         },
@@ -66,9 +66,10 @@ export namespace CourseRepository {
   export async function countAll(search?: string) {
     const where = search
       ? {
-          OR: [{ code: { contains: search } }, { name: { contains: search } }],
+          code: { contains: search },
+          name: { contains: search },
         }
       : {};
-    return await prisma.course.count({ where });
+    return prisma.course.count({ where });
   }
 }

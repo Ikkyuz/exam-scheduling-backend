@@ -2,16 +2,16 @@ import prisma from "@/providers/database/database.provider";
 import { ProctorPairCreateUpdate } from "./proctorPair.schema";
 
 export namespace ProctorPairRepository {
-  export async function createMany(
-    proctorPairs: ProctorPairCreateUpdate[]
-  ) {
+  export async function createMany(proctorPairs: ProctorPairCreateUpdate[]) {
     for (const proctorPair of proctorPairs) {
       const teacher_id = await prisma.proctorPair.findUnique({
         where: { id: proctorPair.teacher_id },
       });
 
       if (!teacher_id) {
-        throw new Error(`teacher_id with id ${proctorPair.teacher_id} not found`);
+        throw new Error(
+          `teacher_id with id ${proctorPair.teacher_id} not found`
+        );
       }
     }
 
@@ -53,7 +53,9 @@ export namespace ProctorPairRepository {
         where: { id: proctorPair.teacher_id },
       });
       if (!teacher_id) {
-        throw new Error(`teacher_id with id ${proctorPair.teacher_id} not found`);
+        throw new Error(
+          `teacher_id with id ${proctorPair.teacher_id} not found`
+        );
       }
     }
 
@@ -62,7 +64,7 @@ export namespace ProctorPairRepository {
       data: proctorPair,
       include: {
         teacher: true,
-      }
+      },
     });
   }
 
@@ -77,13 +79,7 @@ export namespace ProctorPairRepository {
   }
 
   export async function countAll(search?: string) {
-    const where = search
-      ? {
-          OR: [
-            { teacher_id: { contains: search } },
-          ],
-        }
-      : {};
+    const where = search ? { teacher_id: { contains: search } } : {};
     return await prisma.proctorPair.count({ where });
   }
 }

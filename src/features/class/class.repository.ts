@@ -29,14 +29,11 @@ export namespace ClassRepository {
       include: { department: true, enrollments: true },
       skip: options.skip,
       take: options.take,
-      where: options.search
-        ? { name: { contains: options.search } }
-        : undefined,
     });
   }
 
   export async function countAll(search?: string) {
-    const where = search ? { name: { contains: search } } : {};
+    const where = search ? { department_id: { contains: search } } : {};
     return prisma.class.count({ where });
   }
 
@@ -53,7 +50,9 @@ export namespace ClassRepository {
     });
 
     if (!department) {
-      throw new Error(`Department with id ${classData.department_id} not found`);
+      throw new Error(
+        `Department with id ${classData.department_id} not found`
+      );
     }
 
     return await prisma.class.update({ where: { id }, data: classData });
