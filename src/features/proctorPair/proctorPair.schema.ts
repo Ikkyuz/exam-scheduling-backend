@@ -3,7 +3,7 @@ import { TeacherSchema } from "@/features/teacher/teacher.schema";
 
 export const ProctorPairSchema = t.Object({
     id: t.String(),
-    teacherId: t.String(),
+    teacher_id: t.String(),
     createdAt: t.Date(),
     updatedAt: t.Date(),
 });

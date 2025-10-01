@@ -2,7 +2,7 @@ import { t } from "elysia";
 
 export const CourseGroupSchema = t.Object({
   id: t.String(),
-  courseId: t.String(),
+  course_id: t.String(),
   createdAt: t.Date(),
   updatedAt: t.Date(),
 });

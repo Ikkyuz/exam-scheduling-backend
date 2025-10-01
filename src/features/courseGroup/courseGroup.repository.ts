@@ -3,14 +3,14 @@ import { CourseGroupCreateUpdate } from "./courseGroup.schema";
 
 export namespace CourseGroupRepository {
   export async function createMany(courseGroups: CourseGroupCreateUpdate[]) {
-    // ตรวจสอบว่า courseId มีอยู่จริง
+    // ตรวจสอบว่า course_id มีอยู่จริง
     for (const cg of courseGroups) {
       const course = await prisma.course.findUnique({
-        where: { id: cg.courseId },
+        where: { id: cg.course_id },
       });
 
       if (!course) {
-        throw new Error(`Course with id ${cg.courseId} not found`);
+        throw new Error(`Course with id ${cg.course_id} not found`);
       }
     }
 
@@ -32,7 +32,7 @@ export namespace CourseGroupRepository {
   }
 
   export async function countAll(search?: string) {
-    const where = search ? { courseId: { contains: search } } : {};
+    const where = search ? { course_id: { contains: search } } : {};
     return prisma.courseGroup.count({ where });
   }
 

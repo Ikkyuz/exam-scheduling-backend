@@ -58,11 +58,11 @@ export namespace TeacherService {
     throw new Error("Teacher not found");
   }
 
-  // ตรวจสอบ foreign key หากส่ง departmentId มา
-  if (teacher.departmentId) {
-    const department = await DepartmentRepository.findById(teacher.departmentId);
+  // ตรวจสอบ foreign key หากส่ง department_id มา
+  if (teacher.department_id) {
+    const department = await DepartmentRepository.findById(teacher.department_id);
     if (!department) {
-      throw new Error(`Department with id ${teacher.departmentId} not found`);
+      throw new Error(`Department with id ${teacher.department_id} not found`);
     }
   }
 

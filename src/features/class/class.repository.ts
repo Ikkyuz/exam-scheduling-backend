@@ -5,12 +5,12 @@ export namespace ClassRepository {
   export async function createMany(classes: ClassCreateUpdate[]) {
     for (const classData of classes) {
       const department = await prisma.department.findUnique({
-        where: { id: classData.departmentId },
+        where: { id: classData.department_id },
       });
 
       if (!department) {
         throw new Error(
-          `Department with id ${classData.departmentId} not found`
+          `Department with id ${classData.department_id} not found`
         );
       }
     }
@@ -49,11 +49,11 @@ export namespace ClassRepository {
     classData: Partial<ClassCreateUpdate>
   ) {
     const department = await prisma.department.findUnique({
-      where: { id: classData.departmentId },
+      where: { id: classData.department_id },
     });
 
     if (!department) {
-      throw new Error(`Department with id ${classData.departmentId} not found`);
+      throw new Error(`Department with id ${classData.department_id} not found`);
     }
 
     return await prisma.class.update({ where: { id }, data: classData });

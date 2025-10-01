@@ -6,12 +6,12 @@ export namespace ProctorPairRepository {
     proctorPairs: ProctorPairCreateUpdate[]
   ) {
     for (const proctorPair of proctorPairs) {
-      const teacherId = await prisma.proctorPair.findUnique({
-        where: { id: proctorPair.teacherId },
+      const teacher_id = await prisma.proctorPair.findUnique({
+        where: { id: proctorPair.teacher_id },
       });
 
-      if (!teacherId) {
-        throw new Error(`teacherId with id ${proctorPair.teacherId} not found`);
+      if (!teacher_id) {
+        throw new Error(`teacher_id with id ${proctorPair.teacher_id} not found`);
       }
     }
 
@@ -47,13 +47,13 @@ export namespace ProctorPairRepository {
     proctorPairId: string,
     proctorPair: Partial<ProctorPairCreateUpdate>
   ) {
-    // ตรวจสอบ Foreign Key หากมีการส่ง teacherIdId มาอัปเดต
-    if (proctorPair.teacherId) {
-      const teacherId = await prisma.teacher.findUnique({
-        where: { id: proctorPair.teacherId },
+    // ตรวจสอบ Foreign Key หากมีการส่ง teacher_idId มาอัปเดต
+    if (proctorPair.teacher_id) {
+      const teacher_id = await prisma.teacher.findUnique({
+        where: { id: proctorPair.teacher_id },
       });
-      if (!teacherId) {
-        throw new Error(`teacherId with id ${proctorPair.teacherId} not found`);
+      if (!teacher_id) {
+        throw new Error(`teacher_id with id ${proctorPair.teacher_id} not found`);
       }
     }
 
@@ -80,7 +80,7 @@ export namespace ProctorPairRepository {
     const where = search
       ? {
           OR: [
-            { teacherId: { contains: search } },
+            { teacher_id: { contains: search } },
           ],
         }
       : {};

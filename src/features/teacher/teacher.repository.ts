@@ -7,11 +7,11 @@ export namespace TeacherRepository {
   ) {
     for (const teacher of teachers) {
       const department = await prisma.department.findUnique({
-        where: { id: teacher.departmentId },
+        where: { id: teacher.department_id },
       });
 
       if (!department) {
-        throw new Error(`Department with id ${teacher.departmentId} not found`);
+        throw new Error(`Department with id ${teacher.department_id} not found`);
       }
     }
 
@@ -58,13 +58,13 @@ export namespace TeacherRepository {
     teacherId: string,
     teacher: Partial<TeacherCreateUpdate>
   ) {
-    // ตรวจสอบ Foreign Key หากมีการส่ง departmentId มาอัปเดต
-    if (teacher.departmentId) {
+    // ตรวจสอบ Foreign Key หากมีการส่ง department_id มาอัปเดต
+    if (teacher.department_id) {
       const department = await prisma.department.findUnique({
-        where: { id: teacher.departmentId },
+        where: { id: teacher.department_id },
       });
       if (!department) {
-        throw new Error(`Department with id ${teacher.departmentId} not found`);
+        throw new Error(`Department with id ${teacher.department_id} not found`);
       }
     }
 

@@ -7,7 +7,7 @@ export const ClassSchema = t.Object({
     // Level เป็น enum ใน Prisma แต่ Elysia ต้องใช้ t.UnionEnum
     level: t.UnionEnum(["Pvoc", "Pvs"]),
     classYear: t.String(),
-    departmentId: t.String(),
+    department_id: t.String(),
     amount: t.Number(),
     createdAt: t.Date(),
     updatedAt: t.Date(),

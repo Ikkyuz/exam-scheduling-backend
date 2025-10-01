@@ -41,9 +41,7 @@ export namespace CourseRepository {
   ) {
     return prisma.course.update({
       where: { id: courseId },
-      data: {
-        ...course,
-      },
+      data: course,
       include: {
         enrollments: true,
         courseGroups: true,

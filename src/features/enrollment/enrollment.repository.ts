@@ -5,19 +5,19 @@ export namespace EnrollmentRepository {
   export async function createMany(enrollments: EnrollmentCreateUpdate[]) {
     for (const enrollment of enrollments) {
       const course = await prisma.course.findUnique({
-        where: { id: enrollment.courseId },
+        where: { id: enrollment.course_id },
       });
 
       if (!course) {
-        throw new Error(`Course with id ${enrollment.courseId} not found`);
+        throw new Error(`Course with id ${enrollment.course_id} not found`);
       }
 
       const classed = await prisma.class.findUnique({
-        where: { id: enrollment.classId },
+        where: { id: enrollment.class_id },
       });
 
       if (!classed) {
-        throw new Error(`Class with id ${enrollment.classId} not found`);
+        throw new Error(`Class with id ${enrollment.class_id} not found`);
       }
     }
  
@@ -40,7 +40,7 @@ export namespace EnrollmentRepository {
 
   export async function countAll(search?: string) {
     const where = search
-      ? { courseId: { contains: search }, classId: { contains: search } }
+      ? { course_id: { contains: search }, classId: { contains: search } }
       : {};
     return prisma.enrollment.count({ where });
   }
