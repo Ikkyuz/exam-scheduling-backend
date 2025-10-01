@@ -21,7 +21,7 @@ export const departmentController = new Elysia({ prefix: "/departments" })
         },
         {
             body: t.Array(DepartmentCreateUpdateSchema),
-            response: {
+            response: { 
                 201: t.Object({
                      newDepartment: t.Array(DepartmentSchema),
                     message: t.String(),

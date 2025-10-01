@@ -15,7 +15,7 @@ export namespace RoomRepository {
     search?: string;
   }) {
     return prisma.room.findMany({
-      take: options.take,
+      take: options.take, 
       skip: options.skip,
     });
   }

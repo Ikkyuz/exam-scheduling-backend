@@ -20,7 +20,7 @@ export namespace EnrollmentRepository {
         throw new Error(`Class with id ${enrollment.classId} not found`);
       }
     }
-
+ 
     await prisma.enrollment.createMany({
       data: enrollments,
     });

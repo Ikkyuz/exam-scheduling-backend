@@ -15,7 +15,7 @@ export const classController = new Elysia({ prefix: "/class" })
         set.status = "Created";
         return { data: result, message: "Classes created successfully" };
       } catch (error: any) {
-        if (error.message.includes("already exists")) {
+        if (error.message.includes("already exists")) { 
           set.status = "Conflict";
           return { message: error.message };
         }

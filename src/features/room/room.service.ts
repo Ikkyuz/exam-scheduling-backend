@@ -14,7 +14,7 @@ export namespace RoomService {
   ) {
     const page = options.page ?? 1;
     const itemsPerPage = options.itemsPerPage ?? 10;
-    const search = options.search;
+    const search = options.search; 
 
     const { skip, take } = getPaginationParams(page, itemsPerPage);
     const data = await RoomRepository.findAll({ skip, take, search });

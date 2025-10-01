@@ -17,7 +17,7 @@ export namespace DepartmentRepository {
         teachers: true,
       },
       take: options.take,
-      skip: options.skip,
+      skip: options.skip, 
     });
   }
 

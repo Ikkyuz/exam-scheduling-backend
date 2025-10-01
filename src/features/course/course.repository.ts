@@ -14,7 +14,7 @@ export namespace CourseRepository {
     search?: string;
   }) {
     return prisma.course.findMany({
-      include: {
+      include: { 
         enrollments: {
           include: { class: true },
         },

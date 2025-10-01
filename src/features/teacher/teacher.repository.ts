@@ -16,7 +16,7 @@ export namespace TeacherRepository {
     }
 
     await prisma.teacher.createMany({
-      data: teachers,
+      data: teachers, 
     });
   }
 
