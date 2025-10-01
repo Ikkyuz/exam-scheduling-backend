@@ -29,7 +29,7 @@ bun run dev
 
 ---
 
-## ⚙️ การตั้งค่า Database
+# ⚙️ การตั้งค่า Database
 
 สร้างไฟล์ `.env` ที่ root ของโปรเจกต์ และเพิ่มค่าเชื่อมต่อ **MySQL**:
 
@@ -37,71 +37,71 @@ bun run dev
 DATABASE_URL="mysql://root:mysecretpassword@localhost:3306/docs"
 ```
 
-## 🛠 Prisma Commands
+# 🛠 Prisma Commands
 
-# init prisma
+## init prisma
 
 ```sh
 bun x prisma@latest init --datasource-provider=mysql
 ```
 
-# generate types
+## generate types
 
 ```sh
 bun x prisma generate
 ```
 
-# Sync Schema (db push)
+## Sync Schema (db push)
 
 ```sh
 bun x prisma db push
 ```
 
-# Reset Database
+## Reset Database
 
 ```sh
 bun x prisma migrate reset
 ```
 
-# เปิด Prisma Studio
+## เปิด Prisma Studio
 
 ```sh
 bun x prisma studio
 ```
 
-## 🐳 Docker Workflow
+# 🐳 Docker Workflow
 
-# Build docker image
+## Build docker image
 
 ```sh
 docker build -t exam-scheduling .
 ```
 
-# build docker image via docker compose
+## build docker image via docker compose
 
 ```sh
 docker compose build
 ```
 
-# Start app container via docker compose
+## Start app container via docker compose
 
 ```sh
 docker compose up -d
 ```
 
-# Start Database services
+## Start Database services
 
 ```sh
 docker compose -f compose.services.yaml up -d
 ```
 
-# Start Caddy services
+## Start Caddy services
 
 ```sh
 docker compose -f compose.caddy.yaml up -d
 ```
 
-# 🔑 Env Setup for Docker Compose
+## 🔑 Env Setup for Docker Compose
 หากใช้ PostgreSQL สำหรับ Docker Compose ให้แก้ค่าใน .env:
 
 ```sh
