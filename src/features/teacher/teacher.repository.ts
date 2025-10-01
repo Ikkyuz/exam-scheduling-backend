@@ -29,7 +29,6 @@ export namespace TeacherRepository {
       ? {
           OR: [
             { name: { contains: options.search } },
-            { tel: { contains: options.search } },
             { department: { name: { contains: options.search } } },
           ],
         }

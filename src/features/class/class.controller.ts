@@ -13,7 +13,7 @@ export const classController = new Elysia({ prefix: "/class" })
       try {
         const result = await ClassService.createMany(body);
         set.status = "Created";
-        return { data: result, message: "Courses created successfully" };
+        return { data: result, message: "Classes created successfully" };
       } catch (error: any) {
         if (error.message.includes("already exists")) {
           set.status = "Conflict";
@@ -33,7 +33,7 @@ export const classController = new Elysia({ prefix: "/class" })
         409: t.Object({ message: t.String() }),
         500: t.Object({ message: t.String() }),
       },
-      tags: ["Courses"],
+      tags: ["Classes"],
     }
   )
 
@@ -123,7 +123,7 @@ export const classController = new Elysia({ prefix: "/class" })
         404: t.Object({ message: t.String() }),
         500: t.String(),
       },
-      tags: ["Courses"],
+      tags: ["Classes"],
     }
   )
 
@@ -152,7 +152,7 @@ export const classController = new Elysia({ prefix: "/class" })
         404: t.Object({ message: t.String() }),
         500: t.String(),
       },
-      tags: ["Courses"],
+      tags: ["Classes"],
     }
   )
 
@@ -173,7 +173,7 @@ export const classController = new Elysia({ prefix: "/class" })
         200: t.Object({ message: t.String() }),
         500: t.Object({ message: t.String() }),
       },
-      tags: ["Courses"],
+      tags: ["Classes"],
     }
   )
 
@@ -200,6 +200,6 @@ export const classController = new Elysia({ prefix: "/class" })
         404: t.Object({ message: t.String() }),
         500: t.String(),
       },
-      tags: ["Courses"],
+      tags: ["Classes"],
     }
   );

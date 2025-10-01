@@ -39,7 +39,9 @@ export namespace EnrollmentRepository {
   }
 
   export async function countAll(search?: string) {
-    const where = search ? { courseId: { contains: search }, classId: { contains: search } } : {};
+    const where = search
+      ? { courseId: { contains: search }, classId: { contains: search } }
+      : {};
     return prisma.enrollment.count({ where });
   }
 

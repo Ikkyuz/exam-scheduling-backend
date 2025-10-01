@@ -3,30 +3,17 @@ import { CourseCreateUpdate } from "./course.schema";
 
 export namespace CourseRepository {
   export async function createMany(course: CourseCreateUpdate[]) {
-    // ไม่มี Foreign Key ที่ต้องตรวจสอบ
-    return prisma.course.createMany({
-      data: {
-        ...course,
-      },
-    });
-  }
+  return prisma.course.createMany({
+    data: course,
+  });
+}
 
   export async function findAll(options: {
     skip: number;
     take: number;
     search?: string;
   }) {
-    const where = options.search
-      ? {
-          OR: [
-            { code: { contains: options.search } },
-            { name: { contains: options.search } },
-          ],
-        }
-      : {};
-
     return prisma.course.findMany({
-      where,
       include: {
         enrollments: {
           include: { class: true },

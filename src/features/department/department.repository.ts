@@ -62,7 +62,7 @@ export namespace DepartmentRepository {
   export async function countAll(search?: string) {
     const where = search
       ? {
-          OR: [{ name: { contains: search } }, { id: { contains: search } }],
+          OR: [{ name: { contains: search } }],
         }
       : {};
     return await prisma.department.count({ where });

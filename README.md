@@ -1,8 +1,13 @@
-# Elysia with Bun runtime
+# 🚀 Elysia + Bun + Prisma + MySQL (Docker Ready)
 
-## Getting Started
+โปรเจกต์นี้ใช้ **Elysia Framework** ทำงานบน **Bun runtime** พร้อมกับ **Prisma ORM** เชื่อมต่อกับ **MySQL Database**  
+รองรับการใช้งาน **Docker** และ **Docker Compose** สำหรับการพัฒนาและ Deploy ได้ทันที
 
-To get started with this template, simply paste this command into your terminal:
+---
+
+## 📦 Getting Started
+
+สร้างโปรเจกต์ใหม่ด้วยคำสั่ง:
 
 ```bash
 bun create elysia ./elysia-example
@@ -10,13 +15,13 @@ bun create elysia ./elysia-example
 
 ## Development
 
-To start the development server run:
+เริ่มต้นเซิร์ฟเวอร์สำหรับการพัฒนา:
 
 ```bash
 bun run dev
 ```
 
-Open http://localhost:3000/docs with your browser to see the result.
+เปิดเบราว์เซอร์ไปที่ 👉 http://localhost:3000/docs
 
 # Prisma + MySQL with Bun
 
@@ -32,36 +37,44 @@ Open http://localhost:3000/docs with your browser to see the result.
 DATABASE_URL="mysql://root:mysecretpassword@localhost:3306/docs"
 ```
 
-# Prisma
+### 🛠 Prisma Commands
 
-init prisma
+# init prisma
 
 ```sh
 bun x prisma@latest init --datasource-provider=mysql
 ```
 
-generate types
+# generate types
 
 ```sh
 bun x prisma generate
 ```
 
+# Sync Schema (db push)
+
 ```sh
 bun x prisma db push
 ```
+
+# Reset Database
 
 ```sh
 bun x prisma migrate reset
 ```
 
+# เปิด Prisma Studio
+
 ```sh
 bun x prisma studio
 ```
 
+### 🐳 Docker Workflow
+
 # Build docker image
 
 ```sh
-docker build -t minio-file-manager .
+docker build -t exam-scheduling .
 ```
 
 # build docker image via docker compose
@@ -82,8 +95,14 @@ docker compose up -d
 docker compose -f compose.services.yaml up -d
 ```
 
-# Env Setup for Docker compose
+# Start Caddy services
 
+```sh
+docker compose -f compose.caddy.yaml up -d
+```
+
+# 🔑 Env Setup for Docker Compose
+หากใช้ PostgreSQL สำหรับ Docker Compose ให้แก้ค่าใน .env:
 ```sh
 DATABASE_URL="postgresql://<user>:<password>@<postgres uri>:5432/docs"
 ```
