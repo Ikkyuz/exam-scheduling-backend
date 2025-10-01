@@ -5,9 +5,7 @@ export namespace RoomRepository {
   export async function createMany(rooms: RoomCreateUpdate[]) {
     // ไม่มี Foreign Key ที่ต้องตรวจสอบ
     return prisma.room.createMany({
-      data: {
-        ...rooms,
-      },
+      data: rooms,
     });
   }
 

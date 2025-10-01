@@ -4,9 +4,9 @@ import { getPaginationParams } from "../../shared/utils/pagination";
 
 export namespace RoomService {
   export async function createMany(courses: RoomCreateUpdate[]) {
-    return await RoomRepository.createMany({
-      ...courses,
-    });
+    return await RoomRepository.createMany(
+      courses,
+    );
   }
 
   export async function findAll(
