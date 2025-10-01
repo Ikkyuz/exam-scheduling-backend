@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -24,8 +24,8 @@ enum Role {
 }
 
 model Department {
-  id   String @id @default(cuid()) @db.VarChar(25)
-  name String @db.VarChar(100)
+  id       String @id @default(cuid()) @db.Uuid
+  name     String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -37,9 +37,9 @@ model Department {
 }
 
 model Course {
-  id       String   @id @default(cuid()) @db.VarChar(25)
-  code     String   @unique @db.VarChar(10)
-  name     String   @db.VarChar(100)
+  id       String   @id @default(cuid()) @db.Uuid
+  code     String   @unique
+  name     String
   duration Int
   examType ExamType @default(InSchedule)
 
@@ -53,12 +53,12 @@ model Course {
 }
 
 model Class {
-  id           String @id @default(cuid()) @db.VarChar(25)
-  name         String @db.VarChar(100)
-  level        Level  @default(Pvoc)
-  classYear    String @db.VarChar(4)
-  department_id String @db.VarChar(25)
-  amount       Int    @db.Int()
+  id            String @id @default(cuid()) @db.Uuid
+  name          String
+  level         Level  @default(Pvoc)
+  classYear     String
+  department_id String
+  amount        Int
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -66,27 +66,27 @@ model Class {
   department  Department   @relation(fields: [department_id], references: [id])
   enrollments Enrollment[]
 
-  @@index([department_id])
+  @@index([department_id, classYear])
 }
 
 model Enrollment {
-  id       String @id @default(cuid()) @db.VarChar(25)
-  class_id  String @db.VarChar(25)
-  course_id String @db.VarChar(25)
+  id        String @id @default(cuid()) @db.Uuid
+  class_id  String
+  course_id String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   class  Class  @relation(fields: [class_id], references: [id])
-  course Course @relation(fields: [course_id], references: [id])
+  course Course? @relation(fields: [course_id], references: [id])
 
   @@unique([class_id, course_id])
   @@index([class_id, course_id])
 }
 
 model CourseGroup {
-  id       String @id @default(cuid()) @db.VarChar(25)
-  course_id String @db.VarChar(25)
+  id        String @id @default(cuid())
+  course_id String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -97,10 +97,10 @@ model CourseGroup {
 }
 
 model Room {
-  id         String @id @default(cuid()) @db.VarChar(25)
-  roomNumber String @unique @db.VarChar(100)
-  building   String @db.VarChar(10)
-  floor      String @db.VarChar(10)
+  id         String @id @default(cuid()) @db.Uuid
+  roomNumber String @unique
+  building   String
+  floor      String
   capacity   Int
 
   createdAt DateTime @default(now())
@@ -110,49 +110,51 @@ model Room {
 }
 
 model Teacher {
-  id           String @id @default(cuid()) @db.VarChar(25)
-  name         String @db.VarChar(100)
-  department_id String @db.VarChar(25)
-  tel          String @unique @db.VarChar(15)
+  id            String @id @default(cuid()) @db.Uuid
+  name          String
+  department_id String
+  tel           String @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  department   Department    @relation(fields: [department_id], references: [id])
+  department   Department @relation(fields: [department_id], references: [id], name: "fk_teacher_department")
   proctorPairs ProctorPair[]
 
   @@index([name, department_id])
 }
 
 model ProctorPair {
-  id        String @id @default(cuid()) @db.VarChar(25)
-  teacher_id String @db.VarChar(25)
+  id         String @id @default(cuid()) @db.Uuid
+  teacher_id String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  teacher Teacher @relation(fields: [teacher_id], references: [id])
+  teacher Teacher @relation(fields: [teacher_id], references: [id], name: "fk_proctorpair_teacher")
 
   @@index([teacher_id])
 }
 
 model User {
-  id        String  @id @default(cuid()) @db.VarChar(25)
+  id        String @id @default(cuid()) @db.Uuid
   firstname String
   lastname  String
-  username  String  @unique
+  username  String
   password  String
   email     String?
-  role      Role    @default(USER)
+  role      Role @default(USER)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   tokens    Token[]
+
+  @@unique([username, email])
 }
 
 model Token {
-  id         String   @id @default(cuid()) @db.VarChar(25)
-  token      String   @unique
+  id         String @id @default(cuid()) @db.Uuid
+  token      String @unique
   user_id    String
   expires_at DateTime
   created_at DateTime @default(now())
