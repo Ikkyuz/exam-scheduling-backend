@@ -7,6 +7,7 @@ import { EnrollmentController } from "./enrollment/enrollment.controller";
 import { RoomController } from "./room/room.controller";
 import { TeacherController } from "./teacher/teacher.controller";
 import { ProctorPairController } from "./proctorPair/proctorPair.controller";
+import { TokenController } from "./token/token.controller";
 
 export const app = () => {
   return new Elysia({ name: "app", prefix: "/api" })
@@ -18,4 +19,5 @@ export const app = () => {
     .use(RoomController.roomController)
     .use(TeacherController.teacherController)
     .use(ProctorPairController.proctorPairController)
+    .use(TokenController.tokenController);
 };
