@@ -22,7 +22,7 @@ const config: runtime.GetPrismaClientConfig = {
       "value": "prisma-client"
     },
     "output": {
-      "value": "C:\\Users\\User\\Desktop\\Project-exam-scheduling\\backend\\src\\providers\\database\\generated",
+      "value": "C:\\Users\\User\\Desktop\\exam-scheduling-backend\\src\\providers\\database\\generated",
       "fromEnvVar": null
     },
     "config": {
@@ -36,7 +36,7 @@ const config: runtime.GetPrismaClientConfig = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\User\\Desktop\\Project-exam-scheduling\\backend\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\User\\Desktop\\exam-scheduling-backend\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativePath": "../../../../prisma",
@@ -46,7 +46,7 @@ const config: runtime.GetPrismaClientConfig = {
     "db"
   ],
   "activeProvider": "mysql",
-  "postinstall": true,
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {

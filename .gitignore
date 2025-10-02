@@ -45,3 +45,4 @@ db-data
 /src/generated/prisma
 .env
 dist
+/src/generated/prisma
