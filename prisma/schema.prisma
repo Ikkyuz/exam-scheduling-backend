@@ -18,7 +18,10 @@ enum Level {
     Pvs // ปวส
 }
 
-
+enum Role {
+  USER
+  ADMIN
+}
 
 model Department {
     id   String @id @default(cuid()) @db.VarChar(25)
@@ -131,11 +134,6 @@ model ProctorPair {
     teacher Teacher @relation(fields: [teacher_id], references: [id])
 
     @@index([teacher_id])
-}
-
-enum Role {
-  USER
-  ADMIN
 }
 
 model User {
