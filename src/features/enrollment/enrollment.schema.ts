@@ -30,7 +30,7 @@ export const EnrollmentWithRelationsSchema = t.Composite([
             duration: t.Number(),
             examType: t.UnionEnum(["InSchedule", "OutSchedule"]),
         }),
-    }),
+    }), 
 ]);
 
 
