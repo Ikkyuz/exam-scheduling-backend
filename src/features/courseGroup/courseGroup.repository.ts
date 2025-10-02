@@ -1,4 +1,4 @@
-import prisma from "../../providers/database/database.provider";
+import prisma from "@/providers/database/database.provider";
 import { CourseGroupCreateUpdate } from "./courseGroup.schema";
 
 export namespace CourseGroupRepository {

@@ -1,11 +1,11 @@
 import { t } from "elysia";
 import { EnrollmentSchema } from "../enrollment/enrollment.schema";
+import { Level } from "@/providers/database/generated/enums"; // ✅ import enum มาจาก Prisma
 
 export const ClassSchema = t.Object({
     id: t.String(),
     name: t.String(),
-    // Level เป็น enum ใน Prisma แต่ Elysia ต้องใช้ t.UnionEnum
-    level: t.UnionEnum(["Pvoc", "Pvs"]),
+    level: t.Enum(Level),
     classYear: t.String(),
     department_id: t.String(),
     amount: t.Number(),

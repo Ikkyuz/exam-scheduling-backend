@@ -1,4 +1,4 @@
-import prisma from "../../providers/database/database.provider";
+import prisma from "@/providers/database/database.provider";
 import { EnrollmentCreateUpdate } from "./enrollment.schema";
 
 export namespace EnrollmentRepository {

@@ -1,4 +1,5 @@
 import { t } from "elysia";
+import { ExamType } from "@/providers/database/generated/enums"; // ✅ import enum มาจาก Prisma
 import { EnrollmentSchema } from "../enrollment/enrollment.schema";
 import { CourseGroupSchema } from "../courseGroup/courseGroup.schema";
 
@@ -7,7 +8,7 @@ export const CourseSchema = t.Object({
   code: t.String(),
   name: t.String(),
   duration: t.Number(),
-  examType: t.UnionEnum(["InSchedule", "OutSchedule"]),
+  examType: t.Enum(ExamType),
   createdAt: t.Date(),
   updatedAt: t.Date(),
 });

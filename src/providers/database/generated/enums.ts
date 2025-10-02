@@ -26,7 +26,7 @@ export type Level = (typeof Level)[keyof typeof Level]
 
 export const Role = {
   USER: 'USER',
-  Admin: 'Admin'
+  ADMIN: 'ADMIN'
 } as const
 
 export type Role = (typeof Role)[keyof typeof Role]
