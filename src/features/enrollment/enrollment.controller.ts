@@ -1,7 +1,5 @@
-import { Enrollment } from "./../../providers/database/generated/client";
 import Elysia, { t } from "elysia";
 import {
-  EnrollmentSchema,
   EnrollmentCreateUpdateSchema,
   EnrollmentWithRelationsSchema,
 } from "./enrollment.schema";
@@ -14,9 +12,9 @@ export namespace EnrollmentController {
       async ({ body, set }) => {
         try {
           const newEnrollments = await EnrollmentService.createMany(body);
-          set.status = "Created";
+          set.status = 201;
           return {
-            data: newEnrollments,
+            newEnrollments, // array ของ Enrollment objects พร้อม relations
             message: "Enrollments created successfully",
           };
         } catch (error: any) {
@@ -32,11 +30,11 @@ export namespace EnrollmentController {
         body: t.Array(EnrollmentCreateUpdateSchema),
         response: {
           201: t.Object({
-            newEnrollments: t.Array(EnrollmentSchema),
+            newEnrollments: t.Array(EnrollmentWithRelationsSchema), // ใช้ schema พร้อม relations
             message: t.String(),
           }),
-          409: t.String(),
-          500: t.String(),
+          409: t.Object({ message: t.String() }),
+          500: t.Object({ message: t.String() }),
         },
         tags: ["Enrollments"],
       }
@@ -157,8 +155,11 @@ export namespace EnrollmentController {
       "/",
       async ({ set }) => {
         try {
-          const result = await EnrollmentService.deleteAll();
-          return result;
+          await EnrollmentService.deleteAll();
+          set.status = "OK";
+          return {
+            message: "All enrollments deleted successfully",
+          };
         } catch (error: any) {
           set.status = "Internal Server Error";
           if ("message" in error) return error.message;
@@ -178,8 +179,14 @@ export namespace EnrollmentController {
       "/:id",
       async ({ params, set }) => {
         try {
-          const result = await EnrollmentService.deleteById(params.id);
-          return result;
+          const deleteEnrollment = await EnrollmentService.deleteById(
+            params.id
+          );
+          set.status = "OK";
+          return {
+            deleteEnrollment,
+            message: "Enrollment deleted successfully",
+          };
         } catch (error: any) {
           if (error.message === "Enrollment not found") {
             set.status = "Not Found";
@@ -193,7 +200,10 @@ export namespace EnrollmentController {
       {
         params: t.Object({ id: t.String() }),
         response: {
-          200: t.Object({ message: t.String() }),
+          200: t.Object({
+            deleteEnrollment: EnrollmentWithRelationsSchema,
+            message: t.String(),
+          }),
           404: t.Object({ message: t.String() }),
           500: t.String(),
         },

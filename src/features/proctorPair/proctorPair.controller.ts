@@ -1,7 +1,5 @@
-import { ProctorPair } from "./../../providers/database/generated/client";
 import Elysia, { t } from "elysia";
 import {
-  ProctorPairSchema,
   ProctorPairCreateUpdateSchema,
   ProctorPairWithRelationsSchema,
 } from "./proctorPair.schema";
@@ -16,7 +14,7 @@ export namespace ProctorPairController {
           const newProctorPair = await ProctorPairService.createMany(body);
           set.status = "Created";
           return {
-            data: newProctorPair,
+            newProctorPair, // array ของ ProctorPair objects พร้อม teacher
             message: "ProctorPair created successfully",
           };
         } catch (error: any) {
@@ -32,11 +30,11 @@ export namespace ProctorPairController {
         body: t.Array(ProctorPairCreateUpdateSchema),
         response: {
           201: t.Object({
-            newProctorPair: t.Array(ProctorPairSchema),
+            newProctorPair: t.Array(ProctorPairWithRelationsSchema), // ใช้ schema พร้อม relations
             message: t.String(),
           }),
-          409: t.String(),
-          500: t.String(),
+          409: t.Object({ message: t.String() }),
+          500: t.Object({ message: t.String() }),
         },
         tags: ["ProctorPairs"],
       }
@@ -160,8 +158,11 @@ export namespace ProctorPairController {
       "/",
       async ({ set }) => {
         try {
-          const result = await ProctorPairService.deleteAll();
-          return result;
+          await ProctorPairService.deleteAll();
+          set.status = "OK";
+          return {
+            message: "All proctorPairs deleted successfully",
+          };
         } catch (error: any) {
           set.status = "Internal Server Error";
           if ("message" in error) return error.message;
@@ -181,8 +182,9 @@ export namespace ProctorPairController {
       "/:id",
       async ({ params, set }) => {
         try {
-          const result = await ProctorPairService.deleteById(params.id);
-          return result;
+          const deleteProctorPair = await ProctorPairService.deleteById(params.id);
+          set.status = "OK";
+          return { deleteProctorPair, message: "ProctorPair deleted successfully" };
         } catch (error: any) {
           if (error.message === "Course not found") {
             set.status = "Not Found";
@@ -196,7 +198,7 @@ export namespace ProctorPairController {
       {
         params: t.Object({ id: t.String() }),
         response: {
-          200: t.Object({ message: t.String() }),
+          200: t.Object({ deleteProctorPair: ProctorPairWithRelationsSchema, message: t.String() }),
           404: t.Object({ message: t.String() }),
           500: t.String(),
         },

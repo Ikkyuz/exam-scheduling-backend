@@ -2,8 +2,27 @@ import prisma from "@/providers/database/database.provider";
 import { DepartmentCreateUpdate } from "./department.schema";
 
 export namespace DepartmentRepository {
-  export async function createMany(department: DepartmentCreateUpdate[]) {
-    return prisma.department.createMany({ data: department });
+  export async function createMany(departments: DepartmentCreateUpdate[]) {
+    // ใส่ timestamp ชั่วคราวเพื่อ query objects ใหม่
+    const now = new Date();
+    const departmentsWithTime = departments.map((d) => ({
+      ...d,
+      createdAt: now,
+    }));
+
+    // bulk insert
+    await prisma.department.createMany({
+      data: departmentsWithTime,
+    });
+
+    // query objects ใหม่ พร้อม relations (classes, teachers)
+    return prisma.department.findMany({
+      where: { createdAt: now },
+      include: {
+        classes: true,
+        teachers: true,
+      },
+    });
   }
 
   export async function findAll(options: {

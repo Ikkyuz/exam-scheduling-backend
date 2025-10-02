@@ -23,7 +23,7 @@ export const ClassWithRelationsSchema = t.Composite([
             id: t.String(),
             name: t.String(),
         })),
-        enrollment: t.Array(t.Omit(EnrollmentSchema, ["createdAt", "updatedAt"])),
+        enrollments: t.Array(t.Omit(EnrollmentSchema, ["createdAt", "updatedAt"])),
     }),
 ]);
 

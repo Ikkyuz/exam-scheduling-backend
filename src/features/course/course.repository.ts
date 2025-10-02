@@ -2,9 +2,23 @@ import prisma from "@/providers/database/database.provider";
 import { CourseCreateUpdate } from "./course.schema";
 
 export namespace CourseRepository {
-  export async function createMany(course: CourseCreateUpdate[]) {
-    return prisma.course.createMany({
-      data: course,
+  export async function createMany(courses: CourseCreateUpdate[]) {
+    // ใส่ timestamp ชั่วคราวเพื่อ query objects ใหม่
+    const now = new Date();
+    const coursesWithTime = courses.map((c) => ({ ...c, createdAt: now }));
+
+    // bulk insert
+    await prisma.course.createMany({
+      data: coursesWithTime,
+    });
+
+    // query objects ใหม่ พร้อม relations
+    return prisma.course.findMany({
+      where: { createdAt: now },
+      include: {
+        enrollments: true,
+        courseGroups: true,
+      },
     });
   }
 

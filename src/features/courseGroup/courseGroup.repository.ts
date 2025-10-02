@@ -8,14 +8,25 @@ export namespace CourseGroupRepository {
       const course = await prisma.course.findUnique({
         where: { id: cg.course_id },
       });
-
-      if (!course) {
-        throw new Error(`Course with id ${cg.course_id} not found`);
-      }
+      if (!course) throw new Error(`Course with id ${cg.course_id} not found`);
     }
 
+    // ใส่ timestamp ชั่วคราว เพื่อ query objects ที่สร้างใหม่
+    const now = new Date();
+    const courseGroupsWithTime = courseGroups.map((cg) => ({
+      ...cg,
+      createdAt: now,
+    }));
+
+    // bulk insert
     await prisma.courseGroup.createMany({
-      data: courseGroups,
+      data: courseGroupsWithTime,
+    });
+
+    // query objects ที่สร้างใหม่ พร้อม relation course
+    return prisma.courseGroup.findMany({
+      where: { createdAt: now },
+      include: { course: true },
     });
   }
 

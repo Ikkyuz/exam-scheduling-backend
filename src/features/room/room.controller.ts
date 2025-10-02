@@ -9,8 +9,11 @@ export namespace RoomController {
       async ({ body, set }) => {
         try {
           const newRoom = await RoomService.createMany(body);
-          set.status = "Created"; // 201
-          return { newRoom, message: "Rooms created successfully" };
+          set.status = 201;
+          return {
+            newRoom, // array ของ Room objects
+            message: "Rooms created successfully",
+          };
         } catch (error: any) {
           if (error.message.includes("already exists")) {
             set.status = "Conflict"; // 409
@@ -24,7 +27,7 @@ export namespace RoomController {
         body: t.Array(RoomCreateUpdateSchema),
         response: {
           201: t.Object({
-            newRoom: RoomSchema,
+            newRoom: t.Array(RoomSchema), // ต้องเป็น array
             message: t.String(),
           }),
           409: t.Object({ message: t.String() }),
@@ -33,6 +36,7 @@ export namespace RoomController {
         tags: ["Rooms"],
       }
     )
+
     .get(
       "/",
       async ({ query, set }) => {

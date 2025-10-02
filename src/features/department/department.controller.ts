@@ -1,8 +1,7 @@
 import Elysia, { t } from "elysia";
 import {
-  DepartmentSchema,
-  DepartmentWithRelationsSchema,
   DepartmentCreateUpdateSchema,
+  DepartmentWithRelationsSchema,
 } from "./department.schema";
 import { DepartmentService } from "./department.service";
 
@@ -14,7 +13,10 @@ export namespace DepartmentController {
         try {
           const newDepartment = await DepartmentService.createMany(body);
           set.status = 201;
-          return { newDepartment, message: "Department created successfully" };
+          return {
+            newDepartment, // array ของ Department objects พร้อม relations
+            message: "Department created successfully",
+          };
         } catch (error: any) {
           if (error.message.includes("already exists")) {
             set.status = "Conflict"; // 409
@@ -28,7 +30,7 @@ export namespace DepartmentController {
         body: t.Array(DepartmentCreateUpdateSchema),
         response: {
           201: t.Object({
-            newDepartment: t.Array(DepartmentSchema),
+            newDepartment: t.Array(DepartmentWithRelationsSchema), // ใช้ schema พร้อม relations
             message: t.String(),
           }),
           409: t.Object({ message: t.String() }),
@@ -37,6 +39,7 @@ export namespace DepartmentController {
         tags: ["Departments"],
       }
     )
+
     .get(
       "/",
       async ({ query, set }) => {
@@ -110,7 +113,7 @@ export namespace DepartmentController {
       {
         params: t.Object({ id: t.String() }),
         response: {
-          200: DepartmentSchema,
+          200: DepartmentWithRelationsSchema,
           404: t.Object({ message: t.String() }),
           500: t.Object({ message: t.String() }),
         },
@@ -148,7 +151,7 @@ export namespace DepartmentController {
         body: t.Partial(DepartmentCreateUpdateSchema),
         response: {
           200: t.Object({
-            updatedDepartment: DepartmentSchema,
+            updatedDepartment: DepartmentWithRelationsSchema,
             message: t.String(),
           }),
           404: t.Object({ message: t.String() }),
@@ -162,10 +165,9 @@ export namespace DepartmentController {
       "/",
       async ({ set }) => {
         try {
-          const deletedDepartments = await DepartmentService.deleteAll();
+          await DepartmentService.deleteAll();
           set.status = "OK"; // 200
           return {
-            deletedDepartments,
             message: "Departments deleted successfully",
           };
         } catch (error: any) {
@@ -176,7 +178,6 @@ export namespace DepartmentController {
       {
         response: {
           200: t.Object({
-            deletedDepartments: t.Array(DepartmentSchema),
             message: t.String(),
           }),
           500: t.Object({ message: t.String() }),
@@ -188,9 +189,7 @@ export namespace DepartmentController {
       "/:id",
       async ({ params, set }) => {
         try {
-          const deletedDepartment = await DepartmentService.deleteById(
-            params.id
-          );
+          const deletedDepartment = await DepartmentService.deleteById(params.id);
           set.status = "OK"; // 200
           return {
             deletedDepartment,
@@ -217,7 +216,7 @@ export namespace DepartmentController {
         params: t.Object({ id: t.String() }),
         response: {
           200: t.Object({
-            deletedDepartment: DepartmentSchema,
+            deletedDepartment: DepartmentWithRelationsSchema,
             message: t.String(),
           }),
           404: t.Object({ message: t.String() }),

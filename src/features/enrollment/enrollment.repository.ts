@@ -3,26 +3,40 @@ import { EnrollmentCreateUpdate } from "./enrollment.schema";
 
 export namespace EnrollmentRepository {
   export async function createMany(enrollments: EnrollmentCreateUpdate[]) {
+    // ตรวจสอบว่า course_id และ class_id มีอยู่จริง
     for (const enrollment of enrollments) {
       const course = await prisma.course.findUnique({
         where: { id: enrollment.course_id },
       });
-
-      if (!course) {
+      if (!course)
         throw new Error(`Course with id ${enrollment.course_id} not found`);
-      }
 
       const classed = await prisma.class.findUnique({
         where: { id: enrollment.class_id },
       });
-
-      if (!classed) {
+      if (!classed)
         throw new Error(`Class with id ${enrollment.class_id} not found`);
-      }
     }
- 
+
+    // ใส่ timestamp ชั่วคราวเพื่อ query objects ใหม่
+    const now = new Date();
+    const enrollmentsWithTime = enrollments.map((e) => ({
+      ...e,
+      createdAt: now,
+    }));
+
+    // bulk insert
     await prisma.enrollment.createMany({
-      data: enrollments,
+      data: enrollmentsWithTime,
+    });
+
+    // query objects ใหม่ พร้อม relations
+    return prisma.enrollment.findMany({
+      where: { createdAt: now },
+      include: {
+        class: true,
+        course: true,
+      },
     });
   }
 

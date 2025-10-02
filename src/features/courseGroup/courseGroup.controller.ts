@@ -1,6 +1,5 @@
 import Elysia, { t } from "elysia";
 import {
-  CourseGroupSchema,
   CourseGroupCreateUpdateSchema,
   CourseGroupWithRelationsSchema,
 } from "./courseGroup.schema";
@@ -15,7 +14,7 @@ export namespace CourseGroupController {
           const newCourseGroup = await CourseGroupService.createMany(body);
           set.status = "Created";
           return {
-            data: newCourseGroup,
+            newCourseGroup, // array ของ CourseGroup พร้อม course
             message: "CourseGroup created successfully",
           };
         } catch (error: any) {
@@ -31,11 +30,11 @@ export namespace CourseGroupController {
         body: t.Array(CourseGroupCreateUpdateSchema),
         response: {
           201: t.Object({
-            newCourseGroup: t.Array(CourseGroupSchema),
+            newCourseGroup: t.Array(CourseGroupWithRelationsSchema), // ใช้ schema พร้อม relations
             message: t.String(),
           }),
-          409: t.String(),
-          500: t.String(),
+          409: t.Object({ message: t.String() }),
+          500: t.Object({ message: t.String() }),
         },
         tags: ["CourseGroups"],
       }
@@ -159,8 +158,11 @@ export namespace CourseGroupController {
       "/",
       async ({ set }) => {
         try {
-          const result = await CourseGroupService.deleteAll();
-          return result;
+          await CourseGroupService.deleteAll();
+          set.status = "OK";
+          return {
+            message: "All courseGroups deleted successfully",
+          };
         } catch (error: any) {
           set.status = "Internal Server Error";
           if ("message" in error) return error.message;
@@ -180,8 +182,14 @@ export namespace CourseGroupController {
       "/:id",
       async ({ params, set }) => {
         try {
-          const result = await CourseGroupService.deleteById(params.id);
-          return result;
+          const deleteCourseGroup = await CourseGroupService.deleteById(
+            params.id
+          );
+          set.status = "OK";
+          return {
+            deleteCourseGroup,
+            message: "CourseGroup deleted successfully",
+          };
         } catch (error: any) {
           if (error.message === "Course not found") {
             set.status = "Not Found";
@@ -195,7 +203,10 @@ export namespace CourseGroupController {
       {
         params: t.Object({ id: t.String() }),
         response: {
-          200: t.Object({ message: t.String() }),
+          200: t.Object({
+            deleteCourseGroup: CourseGroupWithRelationsSchema,
+            message: t.String(),
+          }),
           404: t.Object({ message: t.String() }),
           500: t.String(),
         },

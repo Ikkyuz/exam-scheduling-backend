@@ -1,7 +1,7 @@
 import Elysia, { t } from "elysia";
 import {
-  TeacherSchema,
   TeacherCreateUpdateSchema,
+  TeacherWithRelationsSchema,
 } from "../teacher/teacher.schema";
 import { TeacherService } from "../teacher/teacher.service";
 
@@ -13,17 +13,20 @@ export namespace TeacherController {
         try {
           const newTeacher = await TeacherService.createMany(body);
           set.status = 201;
-          return { newTeacher, message: "Teacher created successfully" };
+          return {
+            newTeacher, // array ของ Teacher objects พร้อม relations
+            message: "Teacher created successfully",
+          };
         } catch (error: any) {
           if (error.message.includes("Bad Request")) {
-            set.status = "Bad Request"; // 400
-            return { message: error.message }; // Invalid departmentId
+            set.status = 400;
+            return { message: error.message };
           }
           if (error.message.includes("already exists")) {
-            set.status = "Conflict"; // 409
-            return { message: error.message }; // Unique violation (tel)
+            set.status = 409;
+            return { message: error.message };
           }
-          set.status = "Internal Server Error"; // 500
+          set.status = 500;
           return { message: error.message || "Internal Server Error" };
         }
       },
@@ -31,7 +34,7 @@ export namespace TeacherController {
         body: t.Array(TeacherCreateUpdateSchema),
         response: {
           201: t.Object({
-            newTeacher: t.Array(TeacherCreateUpdateSchema),
+            newTeacher: t.Array(TeacherWithRelationsSchema), // ใช้ schema พร้อม relations
             message: t.String(),
           }),
           400: t.Object({ message: t.String() }),
@@ -41,6 +44,7 @@ export namespace TeacherController {
         tags: ["Teachers"],
       }
     )
+
     .get(
       "/",
       async ({ query, set }) => {
@@ -76,7 +80,7 @@ export namespace TeacherController {
         }),
         response: {
           200: t.Object({
-            data: t.Array(TeacherSchema),
+            data: t.Array(TeacherWithRelationsSchema),
             meta_data: t.Object({
               page: t.Number(),
               itemsPerPage: t.Number(),
@@ -110,7 +114,7 @@ export namespace TeacherController {
       {
         params: t.Object({ id: t.String() }),
         response: {
-          200: TeacherSchema,
+          200: TeacherWithRelationsSchema,
           404: t.Object({ message: t.String() }),
           500: t.Object({ message: t.String() }),
         },
@@ -146,7 +150,7 @@ export namespace TeacherController {
         body: t.Partial(TeacherCreateUpdateSchema),
         response: {
           200: t.Object({
-            updatedTeacher: TeacherSchema,
+            updatedTeacher: TeacherWithRelationsSchema,
             message: t.String(),
           }),
           400: t.Object({ message: t.String() }),
@@ -207,7 +211,7 @@ export namespace TeacherController {
         params: t.Object({ id: t.String() }),
         response: {
           200: t.Object({
-            deletedTeacher: TeacherSchema,
+            deletedTeacher: TeacherWithRelationsSchema,
             message: t.String(),
           }),
           404: t.Object({ message: t.String() }),

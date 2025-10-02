@@ -3,20 +3,26 @@ import { ProctorPairCreateUpdate } from "./proctorPair.schema";
 
 export namespace ProctorPairRepository {
   export async function createMany(proctorPairs: ProctorPairCreateUpdate[]) {
-    for (const proctorPair of proctorPairs) {
-      const teacher_id = await prisma.proctorPair.findUnique({
-        where: { id: proctorPair.teacher_id },
+    // ตรวจสอบว่า teacher_id มีอยู่จริง
+    for (const pair of proctorPairs) {
+      const teacher = await prisma.teacher.findUnique({
+        where: { id: pair.teacher_id },
       });
-
-      if (!teacher_id) {
-        throw new Error(
-          `teacher_id with id ${proctorPair.teacher_id} not found`
-        );
-      }
+      if (!teacher)
+        throw new Error(`Teacher with id ${pair.teacher_id} not found`);
     }
 
-    await prisma.proctorPair.createMany({
-      data: proctorPairs,
+    // ใส่ timestamp ชั่วคราวเพื่อ query objects ใหม่
+    const now = new Date();
+    const pairsWithTime = proctorPairs.map((p) => ({ ...p, createdAt: now }));
+
+    // bulk insert
+    await prisma.proctorPair.createMany({ data: pairsWithTime });
+
+    // query objects ใหม่ พร้อม relation teacher
+    return prisma.proctorPair.findMany({
+      where: { createdAt: now },
+      include: { teacher: true },
     });
   }
 

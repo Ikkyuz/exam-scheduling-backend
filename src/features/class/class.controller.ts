@@ -1,6 +1,5 @@
 import Elysia, { t } from "elysia";
 import {
-  ClassSchema,
   ClassCreateUpdateSchema,
   ClassWithRelationsSchema,
 } from "./class.schema";
@@ -14,7 +13,10 @@ export namespace ClassController {
         try {
           const result = await ClassService.createMany(body);
           set.status = "Created";
-          return { data: result, message: "Classes created successfully" };
+          return {
+            data: result, // array ของ Class objects พร้อม relations
+            message: "Classes created successfully",
+          };
         } catch (error: any) {
           if (error.message.includes("already exists")) {
             set.status = "Conflict";
@@ -28,7 +30,7 @@ export namespace ClassController {
         body: t.Array(ClassCreateUpdateSchema),
         response: {
           201: t.Object({
-            data: t.Array(ClassSchema),
+            data: t.Array(ClassWithRelationsSchema), // ใช้ schema พร้อม relations
             message: t.String(),
           }),
           409: t.Object({ message: t.String() }),
@@ -126,7 +128,7 @@ export namespace ClassController {
       {
         params: t.Object({ id: t.String() }),
         response: {
-          200: t.Object({ data: ClassSchema }),
+          200: t.Object({ data: ClassWithRelationsSchema }),
           404: t.Object({ message: t.String() }),
           500: t.String(),
         },
@@ -155,7 +157,7 @@ export namespace ClassController {
         params: t.Object({ id: t.String() }),
         body: t.Partial(ClassCreateUpdateSchema),
         response: {
-          200: t.Object({ data: ClassSchema }),
+          200: t.Object({ data: ClassWithRelationsSchema }),
           404: t.Object({ message: t.String() }),
           500: t.String(),
         },
@@ -167,8 +169,9 @@ export namespace ClassController {
       "/",
       async ({ set }) => {
         try {
-          const result = await ClassService.deleteAll();
-          return result;
+          await ClassService.deleteAll();
+          set.status = "OK";
+          return { message: "All classes deleted successfully" };
         } catch (error: any) {
           set.status = "Internal Server Error";
           if ("message" in error) return error.message;
@@ -188,8 +191,12 @@ export namespace ClassController {
       "/:id",
       async ({ params, set }) => {
         try {
-          const result = await ClassService.deleteById(params.id);
-          return result;
+          const deleteClass = await ClassService.deleteById(params.id);
+          set.status = "OK";
+          return {
+            deletedClass: deleteClass,
+            message: "Class deleted successfully",
+          };
         } catch (error: any) {
           if (error.message === "Course not found") {
             set.status = "Not Found";
@@ -203,7 +210,10 @@ export namespace ClassController {
       {
         params: t.Object({ id: t.String() }),
         response: {
-          200: t.Object({ message: t.String() }),
+          200: t.Object({
+            deletedClass: ClassWithRelationsSchema,
+            message: t.String(),
+          }),
           404: t.Object({ message: t.String() }),
           500: t.String(),
         },

@@ -1,6 +1,5 @@
 import Elysia, { t } from "elysia";
 import {
-  CourseSchema,
   CourseWithRelationsSchema,
   CourseCreateUpdateSchema,
 } from "../course/course.schema";
@@ -13,24 +12,25 @@ export namespace CourseController {
       async ({ body, set }) => {
         try {
           const newCourse = await CourseService.createMany(body);
-          set.status = "Created";
-          return { newCourse, message: "Course created successfully" };
+          set.status = 201;
+          return {
+            newCourse, // array ของ Course objects พร้อม relations
+            message: "Course created successfully",
+          };
         } catch (error: any) {
           if (error.message.includes("already exists")) {
-            set.status = "Conflict"; // 409
+            set.status = 409;
             return { message: error.message };
           }
-          set.status = "Internal Server Error"; // 500
+          set.status = 500;
           return { message: error.message || "Internal Server Error" };
         }
       },
       {
-        body: t.Array(
-          t.Pick(CourseSchema, ["code", "name", "duration", "examType"])
-        ),
+        body: t.Array(CourseCreateUpdateSchema),
         response: {
           201: t.Object({
-            newCourse: CourseSchema,
+            newCourse: t.Array(CourseWithRelationsSchema), // ใช้ schema พร้อม relations
             message: t.String(),
           }),
           409: t.Object({ message: t.String() }),
@@ -39,6 +39,7 @@ export namespace CourseController {
         tags: ["Courses"],
       }
     )
+
     .get(
       "/",
       async ({ query, set }) => {

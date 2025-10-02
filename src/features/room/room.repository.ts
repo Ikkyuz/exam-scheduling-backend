@@ -3,9 +3,18 @@ import { RoomCreateUpdate } from "./room.schema";
 
 export namespace RoomRepository {
   export async function createMany(rooms: RoomCreateUpdate[]) {
-    // ไม่มี Foreign Key ที่ต้องตรวจสอบ
-    return prisma.room.createMany({
-      data: rooms,
+    // ใส่ timestamp ชั่วคราวเพื่อ query objects ใหม่
+    const now = new Date();
+    const roomsWithTime = rooms.map((r) => ({ ...r, createdAt: now }));
+
+    // bulk insert
+    await prisma.room.createMany({
+      data: roomsWithTime,
+    });
+
+    // query objects ใหม่
+    return prisma.room.findMany({
+      where: { createdAt: now },
     });
   }
 

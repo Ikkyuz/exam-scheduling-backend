@@ -3,20 +3,31 @@ import { ClassCreateUpdate } from "./class.schema";
 
 export namespace ClassRepository {
   export async function createMany(classes: ClassCreateUpdate[]) {
+    // ตรวจสอบว่า department_id มีอยู่จริง
     for (const classData of classes) {
       const department = await prisma.department.findUnique({
         where: { id: classData.department_id },
       });
-
-      if (!department) {
+      if (!department)
         throw new Error(
           `Department with id ${classData.department_id} not found`
         );
-      }
     }
 
-    await prisma.class.createMany({
-      data: classes,
+    // ใส่ timestamp ชั่วคราวเพื่อ query objects ใหม่
+    const now = new Date();
+    const classesWithTime = classes.map((c) => ({ ...c, createdAt: now }));
+
+    // bulk insert
+    await prisma.class.createMany({ data: classesWithTime });
+
+    // query objects ใหม่ พร้อม relation department (และ enrollments ถ้าต้องการ)
+    return prisma.class.findMany({
+      where: { createdAt: now },
+      include: {
+        department: true, // คืนค่า department
+        enrollments: true, // คืนค่า enrollments
+      },
     });
   }
 
